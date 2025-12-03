@@ -20,11 +20,6 @@ public static class ExecutionResultUtility
         return new ExecutionFailure(ExecutionFailureTypes.Validation, error);
     }
 
-    // public static ExecutionFailure FromDataAccessFailure(DataAccessFailure failure)
-    // {
-    //     return new ExecutionFailure(failure);
-    // }
-
     public static ExecutionFailure FromException(Exception ex)
     {
         return new ExecutionFailure(ex);

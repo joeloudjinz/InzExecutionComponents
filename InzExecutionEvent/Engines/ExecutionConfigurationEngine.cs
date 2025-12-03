@@ -6,18 +6,17 @@ using Microsoft.Extensions.Configuration;
 
 namespace InzExecutionEvent.Engines;
 
-[ProvideSingleton(typeof(ExecutionConfigurationEngine))]
 public class ExecutionConfigurationEngine
 {
     private Dictionary<string, IExecutionConfigurationOptions> ConfigurationOptionsMap { get; } = new();
 
     public void RegisterConfigurationsFromAssembly(Assembly assembly, IConfiguration configuration)
     {
-        var types = assembly.GetTypes().Where(t => t.GetCustomAttributes().Any(a => a is RegisterContextConfigOptionsAttribute)).ToList();
+        var types = assembly.GetTypes().Where(t => t.GetCustomAttributes().Any(a => a is RegisterExecutionConfigOptionsAttribute)).ToList();
         foreach (var type in types)
         {
-            var a = type.GetCustomAttributes().First(a => a is RegisterContextConfigOptionsAttribute);
-            if (a is not RegisterContextConfigOptionsAttribute attribute)
+            var a = type.GetCustomAttributes().First(a => a is RegisterExecutionConfigOptionsAttribute);
+            if (a is not RegisterExecutionConfigOptionsAttribute attribute)
             {
                 Console.WriteLine($"Skipping configuration class [{type.Name}] because applied attribute is not of type [ConfigurationOptionsAttribute]");
                 continue;

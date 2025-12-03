@@ -4,29 +4,26 @@ using InzExecutionEvent.Contracts.ExecutionEvent;
 using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Engines;
 using InzExecutionEvent.ExecutionContext;
-using InzExecutionEvent.Utilities;
+using InzExecutionEvent.ExecutionEvent;
 
 namespace InzExecutionEvent.ExecutionPlan;
 
-[ProvideSingleton(typeof(ExecutionPlanEngine))]
 public class ExecutionPlanEngine(
     EventEngine eventEngine,
     ExecutionNotificationEngine executionNotificationEngine,
-    ExecutionConfigurationEngine executionConfigurationEngine)
+    ExecutionConfigurationEngine executionConfigurationEngine
+)
 {
     private Dictionary<Guid, IExecutionRegistryContract> RegisteredExecutionPlanInstancesMap { get; } = new();
 
     private readonly List<Type> _processableAttributes =
     [
-        typeof(ExecutionPlanTypeAttribute),
-        typeof(ApiEndpointAttribute),
         typeof(MessagingQueueLabelAttribute),
-        typeof(RequestDataTypeAttribute),
-        typeof(ResponseDataTypeAttribute),
-        typeof(RequirePermissionCheckAttribute),
-        typeof(RequireConfigurationOptionsAttribute),
-        typeof(PublishSystemNotificationsAttribute),
-        typeof(ExecutorAttribute)
+        typeof(ExecutionInputDataTypeAttribute),
+        typeof(ExecutionOutputDataTypeAttribute),
+        typeof(ExecutionConfigurationOptionsAttribute),
+        typeof(PublishExecutionNotificationsAttribute),
+        typeof(ExecutionPlanAttribute)
     ];
 
     private readonly List<Type> _processableExecutionInterfaces =
@@ -51,9 +48,9 @@ public class ExecutionPlanEngine(
 
     public async Task LoadAndDispatchRequestExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
+        // if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
         if (plan.RequirePermissionCheck) ExecutionPlanUtility.RequirePermissionsCheck(context, plan);
-        if (plan.HasRequestData) ExecutionPlanUtility.HasRequestData(context, plan);
+        if (plan.HasInputData) ExecutionPlanUtility.HasRequestData(context, plan);
         await eventEngine.DispatchEvents(context, plan.RequestEventsQueue);
     }
 
@@ -75,8 +72,8 @@ public class ExecutionPlanEngine(
 
     private async Task CheckAndPublishSystemNotificationsOfExecutionPlan(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        if (!plan.SystemNotificationToPublish.Any()) return;
-        await executionNotificationEngine.HandleNotifications(context, plan.SystemNotificationToPublish);
+        if (plan.ExecutionNotificationToPublish.Length == 0) return;
+        await executionNotificationEngine.HandleNotifications(context, plan.ExecutionNotificationToPublish);
     }
 
     private async Task CheckAndRunAfterDispatchingPostExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -131,20 +128,20 @@ public class ExecutionPlanEngine(
 
     private void CheckAndLoadRequiredConfigurationOptions(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        if (!plan.RequiredConfigurations.Any()) return;
-        executionConfigurationEngine.LoadConfigurationOptionsIntoContext(context, plan.RequiredConfigurations);
+        if (plan.RequiredExecutionConfigurations.Length == 0) return;
+        executionConfigurationEngine.LoadConfigurationOptionsIntoContext(context, plan.RequiredExecutionConfigurations);
     }
 
     private IExecutionPlanContract CreateExecutionDataContractFromExecutionContractInstance(IExecutionRegistryContract contract)
     {
         var planContract = new Contracts.ExecutionPlan.CoreExecutionPlanContract { PlanId = Guid.NewGuid() };
         var contractType = contract.GetType();
-        ExecutionContractTypeProcessor.ProcessAttributes(
+        ExecutionPlanUtility.ProcessAttributes(
             planContract,
             contractType.GetCustomAttributes(false).Where(a => _processableAttributes.Contains(a.GetType())).ToList()
         );
         if (!planContract.IsRegistered) return planContract;
-        ExecutionContractTypeProcessor.ProcessInterfaces(
+        ExecutionPlanUtility.ProcessInterfaces(
             planContract,
             contractType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
         );

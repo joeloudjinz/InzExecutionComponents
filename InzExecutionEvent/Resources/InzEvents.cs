@@ -1,6 +1,5 @@
 namespace InzExecutionEvent.Resources;
 
-// TODO: move all event keys into here
 public static class InzEvents
 {
     /// <summary>

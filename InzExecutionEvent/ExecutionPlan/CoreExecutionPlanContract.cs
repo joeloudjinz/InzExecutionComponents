@@ -16,14 +16,14 @@ public class CoreExecutionPlanContract : IExecutionPlanContract
     public Queue<string[]> RequestEventsQueue { get; set; } = new();
     public bool RequirePermissionCheck { get; set; }
     public List<string> Permissions { get; set; } = [];
-    public bool HasRequestData { get; set; }
-    public bool ValidateRequestData { get; set; }
-    public Type RequestDataType { get; set; }
-    public Type? RequestDataValidatorType { get; set; }
-    public Type? ResponseDataType { get; set; }
+    public bool HasInputData { get; set; }
+    public bool ValidateInputData { get; set; }
+    public Type InputDataType { get; set; }
+    public Type? InputDataValidatorType { get; set; }
+    public Type? OutputDataType { get; set; }
     public bool UseRateLimiter { get; set; }
-    public string[] RequiredConfigurations { get; set; } = [];
-    public string[] SystemNotificationToPublish { get; set; } = [];
+    public string[] RequiredExecutionConfigurations { get; set; } = [];
+    public string[] ExecutionNotificationToPublish { get; set; } = [];
     public bool RequireAuthentication { get; set; }
     public string AuthenticationHeader { get; set; } = string.Empty;
     public string Body { get; set; }

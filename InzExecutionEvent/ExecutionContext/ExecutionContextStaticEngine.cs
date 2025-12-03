@@ -1,21 +1,20 @@
 using InzExecutionEvent.Contracts.ExecutionContext;
-using InzExecutionEvent.ExecutionPlan;
 
 namespace InzExecutionEvent.ExecutionContext;
 
 internal static class ExecutionContextStaticEngine
 {
-    public static ISystemExecutionContext Build(IServiceProvider provider)
-    {
-        return new CoreExecutionContext
-        {
-            Store = new ExecutionContextDataStore(),
-            Failures = new ExecutionContextFailureRepository(),
-            Results = new ExecutionContextResultRepository(),
-            Response = new ExecutionGroupResponse(),
-            ServiceProvider = provider
-        };
-    }
+    // public static ISystemExecutionContext Build(IServiceProvider provider)
+    // {
+    //     return new CoreExecutionContext
+    //     {
+    //         Store = new ExecutionContextDataStore(),
+    //         Failures = new ExecutionContextFailureRepository(),
+    //         Results = new ExecutionContextResultRepository(),
+    //         Response = new ExecutionGroupResponse(),
+    //         ServiceProvider = provider
+    //     };
+    // }
 
     public static bool CheckAndProcessFailures(ISystemExecutionContext context)
     {
@@ -69,7 +68,6 @@ internal static class ExecutionContextStaticEngine
     //     context.MetaData = metadataStore;
     // }
 
-    // TODO Move these to common utilities because they might be used in other module
-    public static string FormatHttpRequestQueryMetaDataKey(string label) => $"req.query.{label}";
-    public static string FormatHttpRequestHeaderMetaDataKey(string label) => $"req.header.{label}";
+    // public static string FormatHttpRequestQueryMetaDataKey(string label) => $"req.query.{label}";
+    // public static string FormatHttpRequestHeaderMetaDataKey(string label) => $"req.header.{label}";
 }

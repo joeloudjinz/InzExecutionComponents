@@ -3,9 +3,9 @@ using InzExecutionEvent.Enums;
 namespace InzExecutionEvent.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class RequestDataTypeAttribute : Attribute
+public class ExecutionInputDataTypeAttribute : Attribute
 {
-    public RequestDataTypeAttribute(
+    public ExecutionInputDataTypeAttribute(
         Type requestDataType,
         Type validatorType,
         RequestDataPropertiesCasing casing = RequestDataPropertiesCasing.CamelCase
@@ -16,7 +16,7 @@ public class RequestDataTypeAttribute : Attribute
         PropertiesCasing = casing;
     }
         
-    public RequestDataTypeAttribute(
+    public ExecutionInputDataTypeAttribute(
         Type requestDataType,
         RequestDataPropertiesCasing casing = RequestDataPropertiesCasing.CamelCase
     )

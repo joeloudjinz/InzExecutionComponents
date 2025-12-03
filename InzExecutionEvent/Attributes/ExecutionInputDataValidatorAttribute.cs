@@ -1,6 +1,6 @@
 namespace InzExecutionEvent.Attributes;
 
 [AttributeUsage(AttributeTargets.Class)]
-public class RequireAuthenticationAttribute : Attribute
+public class ExecutionInputDataValidatorAttribute : Attribute
 {
 }

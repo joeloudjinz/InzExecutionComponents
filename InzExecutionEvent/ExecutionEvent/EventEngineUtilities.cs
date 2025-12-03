@@ -1,7 +1,6 @@
-using InzExecutionEvent.Engines;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InzExecutionEvent.Utilities;
+namespace InzExecutionEvent.ExecutionEvent;
 
 public static class EventEngineUtilities
 {

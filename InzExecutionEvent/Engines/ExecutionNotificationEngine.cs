@@ -1,11 +1,9 @@
 using System.Collections.Immutable;
-using InzExecutionEvent.Attributes;
 using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionNotification;
 
 namespace InzExecutionEvent.Engines;
 
-[ProvideSingleton(typeof(ExecutionNotificationEngine))]
 public class ExecutionNotificationEngine
 {
     private Dictionary<string, IExecutionNotification> _notificationsMap = new();

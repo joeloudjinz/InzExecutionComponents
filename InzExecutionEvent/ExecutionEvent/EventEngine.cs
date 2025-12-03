@@ -2,12 +2,11 @@ using System.Collections.Immutable;
 using InzExecutionEvent.Attributes;
 using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionEvent;
+using InzExecutionEvent.Engines;
 using InzExecutionEvent.Enums;
-using InzExecutionEvent.Utilities;
 
-namespace InzExecutionEvent.Engines;
+namespace InzExecutionEvent.ExecutionEvent;
 
-[ProvideSingleton(typeof(EventEngine))]
 public class EventEngine(ExecutionConfigurationEngine configurationEngine, ExecutionNotificationEngine executionNotificationEngine)
 {
     public static readonly Type[] EventTypesToRegister =
@@ -20,12 +19,12 @@ public class EventEngine(ExecutionConfigurationEngine configurationEngine, Execu
 
     public static readonly Type[] ProcessableAttributes =
     [
-        typeof(PublishSystemNotificationsAttribute),
+        typeof(PublishExecutionNotificationsAttribute),
         typeof(BaseExecutionEventAttribute),
         typeof(ExecutionEventAttribute),
         typeof(ServiceExecutionEventAttribute),
         typeof(ContextExecutionEventAttribute),
-        typeof(DataAccessExecutionEventAttribute)
+        // typeof(DataAccessExecutionEventAttribute)
     ];
 
     private readonly Dictionary<string, EventContract> _registeredEventsContracts = new();
@@ -56,8 +55,8 @@ public class EventEngine(ExecutionConfigurationEngine configurationEngine, Execu
     {
         foreach (var attribute in attributes)
         {
-            if (attribute is not PublishSystemNotificationsAttribute systemNotifications) continue;
-            if (!systemNotifications.Notifications.Any()) continue;
+            if (attribute is not PublishExecutionNotificationsAttribute systemNotifications) continue;
+            if (systemNotifications.Notifications.Length == 0) continue;
             _registeredEventsContracts[eventName].RequiredSystemNotifications = systemNotifications.Notifications;
             // Register more data for the event by processing other attribute here ...
         }
@@ -96,10 +95,10 @@ public class EventEngine(ExecutionConfigurationEngine configurationEngine, Execu
 
     // private IBaseEvent? InstantiateDataAccessEvent(Type eventType, BaseExecutionEventAttribute executionEventData)
     // {
-        // if (executionEventData.InputType is null && executionEventData.OutputType is not null) eventType = eventType.MakeGenericType(executionEventData.OutputType);
-        // else if (executionEventData.InputType is not null && executionEventData.OutputType is not null) eventType = eventType.MakeGenericType(executionEventData.InputType, executionEventData.OutputType);
-        // else throw new Exception($"{executionEventData.Name} doesn't have valid data access event signature, double check that input and output types are defined according to the implemented interface.");
-        // return Activator.CreateInstance(eventType) as IBaseEvent;
+    //     if (executionEventData.InputType is null && executionEventData.OutputType is not null) eventType = eventType.MakeGenericType(executionEventData.OutputType);
+    //     else if (executionEventData.InputType is not null && executionEventData.OutputType is not null) eventType = eventType.MakeGenericType(executionEventData.InputType, executionEventData.OutputType);
+    //     else throw new Exception($"{executionEventData.Name} doesn't have valid data access event signature, double check that input and output types are defined according to the implemented interface.");
+    //     return Activator.CreateInstance(eventType) as IBaseEvent;
     // }
 
     // private string BuildAndRegisterEventContract(IBaseEvent instance, List<object> attributes)
@@ -185,8 +184,9 @@ public class EventEngine(ExecutionConfigurationEngine configurationEngine, Execu
     private Task CheckIfEventPublishesSystemNotificationAndPublish(IExecutionContext context, string name)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
-        if (model.RequiredSystemNotifications.Length == 0) return Task.CompletedTask;
-        return executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
+        return model.RequiredSystemNotifications.Length == 0 
+            ? Task.CompletedTask 
+            : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
     }
 
     private void CheckIfEventRequiresMetadataResourcesContext(IExecutionContext context, string name)
@@ -209,19 +209,4 @@ public class EventEngine(ExecutionConfigurationEngine configurationEngine, Execu
         if (model.RequiredConfigurations.Length == 0) return;
         configurationEngine.LoadConfigurationOptionsIntoContext(context, model.RequiredConfigurations);
     }
-}
-
-// TODO: move into a separate file
-public class EventContract
-{
-    // public IBaseEvent Instance { get; set; }
-    public Type InstanceType { get; set; }
-    public string Name { get; set; }
-    public EventType Type { get; set; }
-    public string[] RequiredMetadataKeys { get; set; } = [];
-    public string[] RequiredConfigurations { get; set; } = [];
-    public string[] RequiredStoreKeys { get; set; } = [];
-    public string[] RequiredSystemNotifications { get; set; } = [];
-    public Type? InputType { get; set; }
-    public Type? OutputType { get; set; }
 }
