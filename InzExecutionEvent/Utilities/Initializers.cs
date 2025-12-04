@@ -6,7 +6,7 @@ using InzExecutionEvent.ExecutionEvent;
 using InzExecutionEvent.ExecutionPlan;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InzExecutionEvent;
+namespace InzExecutionEvent.Utilities;
 
 public static class Initializers
 {

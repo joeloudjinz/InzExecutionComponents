@@ -2,6 +2,7 @@
 using InzExecutionEvent.Engines;
 using InzExecutionEvent.ExecutionEvent;
 using InzExecutionEvent.ExecutionPlan;
+using InzExecutionEvent.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -26,7 +27,7 @@ public static class InzExecutionEvent
         Scouters.ExecutionEvents(assembly, builder.ServiceCollection);
         Scouters.ExecutionNotifications(assembly, builder.ServiceCollection);
         Scouters.ExecutionNotificationHandlers(assembly, builder.ServiceCollection);
-        // TODO Discover and register execution configurations
+        Scouters.ExecutionConfigurations(assembly, builder.Configuration);
         return builder;
     }
 
@@ -38,7 +39,7 @@ public static class InzExecutionEvent
             Scouters.ExecutionEvents(assembly, builder.ServiceCollection);
             Scouters.ExecutionNotifications(assembly, builder.ServiceCollection);
             Scouters.ExecutionNotificationHandlers(assembly, builder.ServiceCollection);
-            // TODO Discover and register execution configurations
+            Scouters.ExecutionConfigurations(assembly, builder.Configuration);
         }
 
         return builder;
@@ -49,7 +50,6 @@ public static class InzExecutionEvent
         Initializers.ExecutionPlans(services);
         Initializers.ExecutionEvents(services);
         Initializers.ExecutionNotificationsAndHandlers(services);
-        // TODO Initialize execution configurations
         return services;
     }
 }

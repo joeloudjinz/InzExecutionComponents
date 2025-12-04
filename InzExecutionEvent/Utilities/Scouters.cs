@@ -5,9 +5,10 @@ using InzExecutionEvent.Contracts.ExecutionEvent;
 using InzExecutionEvent.Contracts.ExecutionNotification;
 using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InzExecutionEvent;
+namespace InzExecutionEvent.Utilities;
 
 internal static class Scouters
 {
@@ -61,7 +62,7 @@ internal static class Scouters
         var list = assembly.GetTypes().Where(type => type.GetInterfaces().Any(i => i == typeof(IExecutionNotification))).ToList();
         foreach (var type in list) collection.AddSingleton(typeof(IExecutionNotification), type);
         stopwatch.Stop();
-        Console.WriteLine($"{assembly.GetName().Name} => System notifications discovery and registration took [{stopwatch.ElapsedMilliseconds} ms].");
+        Console.WriteLine($"{assembly.GetName().Name} => Execution notifications discovery and registration took [{stopwatch.ElapsedMilliseconds} ms].");
     }
 
     public static void ExecutionNotificationHandlers(Assembly assembly, IServiceCollection collection)
@@ -70,6 +71,14 @@ internal static class Scouters
         var list = assembly.GetTypes().Where(type => type.GetInterfaces().Any(i => i == typeof(IExecutionNotificationHandler))).ToList();
         foreach (var type in list) collection.AddSingleton(typeof(IExecutionNotificationHandler), type);
         stopwatch.Stop();
-        Console.WriteLine($"{assembly.GetName().Name} => System notification handlers discovery and registration took [{stopwatch.ElapsedMilliseconds} ms].");
+        Console.WriteLine($"{assembly.GetName().Name} => Execution notification handlers discovery and registration took [{stopwatch.ElapsedMilliseconds} ms].");
+    }
+
+    public static void ExecutionConfigurations(Assembly assembly, IConfiguration configuration)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        // TODO implement this method
+        stopwatch.Stop();
+        Console.WriteLine($"{assembly.GetName().Name} => Execution configurations discovery and registration took [{stopwatch.ElapsedMilliseconds} ms].");
     }
 }
