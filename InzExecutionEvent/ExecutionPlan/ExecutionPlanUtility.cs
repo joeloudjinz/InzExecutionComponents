@@ -56,6 +56,16 @@ public static class ExecutionPlanUtility
             {
                 contract.OutputDataType = executionOutputDataTypeAttribute.Type;
             }
+
+            if (attribute is RegisterPreExecutionEvents registerPreExecutionEventsAttribute)
+            {
+                contract.RequiredPreExecutionEvent = registerPreExecutionEventsAttribute.Events;
+            }
+
+            if (attribute is RegisterPostExecutionEvents registerPostExecutionEventsAttribute)
+            {
+                contract.RequiredPostExecutionEvent = registerPostExecutionEventsAttribute.Events;
+            }
         }
     }
 
@@ -64,25 +74,24 @@ public static class ExecutionPlanUtility
         planContract.ShouldRunBeforeDispatchingPreExecutionEventsTask = interfaces.Contains(typeof(IPreEventsExecutionContract));
         planContract.ShouldRunExecutionTask = interfaces.Contains(typeof(IExecutionContract<IExecutionResultContract>));
         planContract.ShouldRunAfterDispatchingPostExecutionEventsTask = interfaces.Contains(typeof(IPostEventsExecutionContract));
-        planContract.HasEvents = interfaces.Contains(typeof(IExecutionEventsContract));
     }
 
-    public static void HasRequestData(IExecutionContext context, IExecutionPlanContract plan)
-    {
-        context.MetaData.Set(InzMetaDataKeys.Request.RawBodyString, plan.Body);
-        context.MetaData.Set(InzMetaDataKeys.Request.BodyType, plan.InputDataType);
-        plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.DeserializeRequestDataEvent]);
-        if (plan.ValidateInputData)
-        {
-            // TODO: put context resources for request data validator event
-            // plan.RequestEventsQueue.Enqueue(new[] {EventNames.ValidateRequestDataEvent});
-        }
-    }
-
-    public static void RequirePermissionsCheck(IExecutionContext context, IExecutionPlanContract plan)
-    {
-        plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.LoadUserPermissionsCacheEvent]);
-        context.MetaData.Set(InzMetaDataKeys.Request.PermissionsToCheck, plan.Permissions);
-        plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.CheckUserHasPermissionsEvent]);
-    }
+    // public static void HasRequestData(IExecutionContext context, IExecutionPlanContract plan)
+    // {
+    //     context.MetaData.Set(InzMetaDataKeys.Request.RawBodyString, plan.Body);
+    //     context.MetaData.Set(InzMetaDataKeys.Request.BodyType, plan.InputDataType);
+    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.DeserializeRequestDataEvent]);
+    //     if (plan.ValidateInputData)
+    //     {
+    //         // TODO: put context resources for request data validator event
+    //         // plan.RequestEventsQueue.Enqueue(new[] {EventNames.ValidateRequestDataEvent});
+    //     }
+    // }
+    //
+    // public static void RequirePermissionsCheck(IExecutionContext context, IExecutionPlanContract plan)
+    // {
+    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.LoadUserPermissionsCacheEvent]);
+    //     context.MetaData.Set(InzMetaDataKeys.Request.PermissionsToCheck, plan.Permissions);
+    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.CheckUserHasPermissionsEvent]);
+    // }
 }

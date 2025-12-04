@@ -20,6 +20,8 @@ public interface IExecutionPlanContract
     public bool ShouldRunExecutionTask { get; set; }
     public bool ShouldRunAfterDispatchingPostExecutionEventsTask { get; set; }
     public bool HasEvents { get; set; }
+    public string[][] RequiredPreExecutionEvent { get; set; }
+    public string[][] RequiredPostExecutionEvent { get; set; }
     public string[] RequiredExecutionConfigurations { get; set; }
     public string[] ExecutionNotificationToPublish { get; set; }
 }

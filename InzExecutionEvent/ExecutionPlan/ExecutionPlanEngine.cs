@@ -28,7 +28,7 @@ internal class ExecutionPlanEngine(
 
     private readonly List<Type> _processableExecutionInterfaces =
     [
-        typeof(IExecutionEventsContract),
+        // typeof(IExecutionEventsContract),
         typeof(IPreEventsExecutionContract),
         typeof(IExecutionContract<IExecutionResultContract>),
         typeof(IPostEventsExecutionContract)
@@ -46,13 +46,13 @@ internal class ExecutionPlanEngine(
         }
     }
 
-    public async Task LoadAndDispatchRequestExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
-    {
-        // if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
-        if (plan.RequirePermissionCheck) ExecutionPlanUtility.RequirePermissionsCheck(context, plan);
-        if (plan.HasInputData) ExecutionPlanUtility.HasRequestData(context, plan);
-        await executionEventEngine.DispatchEvents(context, plan.RequestEventsQueue);
-    }
+    // public async Task LoadAndDispatchRequestExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
+    // {
+    //     if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
+    //     if (plan.RequirePermissionCheck) ExecutionPlanUtility.RequirePermissionsCheck(context, plan);
+    //     if (plan.HasInputData) ExecutionPlanUtility.HasRequestData(context, plan);
+    //     await executionEventEngine.DispatchEvents(context, plan.RequestEventsQueue);
+    // }
 
     public async Task PerformExecution(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
@@ -90,9 +90,8 @@ internal class ExecutionPlanEngine(
     private async Task CheckAndDispatchPostExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
         if (!plan.HasEvents) return;
-        var eventsContract = (IExecutionEventsContract)RegisteredExecutionPlanInstancesMap[plan.PlanId];
-        if (eventsContract.PostExecutionEvents.Length == 0) return;
-        await executionEventEngine.DispatchEvents(context, eventsContract.PostExecutionEvents);
+        if (plan.RequiredPostExecutionEvent.Length == 0) return;
+        await executionEventEngine.DispatchEvents(context, plan.RequiredPostExecutionEvent);
     }
 
     private async Task CheckAndRunExecutionTask(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -106,13 +105,11 @@ internal class ExecutionPlanEngine(
         await instance.Execute(context);
     }
 
-    private async Task CheckAndDispatchPreExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan
-    )
+    private async Task CheckAndDispatchPreExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
         if (!plan.HasEvents) return;
-        var eventsContract = (IExecutionEventsContract)RegisteredExecutionPlanInstancesMap[plan.PlanId];
-        if (eventsContract.PreExecutionEvents.Length == 0) return;
-        await executionEventEngine.DispatchEvents(context, eventsContract.PreExecutionEvents);
+        if (plan.RequiredPreExecutionEvent.Length == 0) return;
+        await executionEventEngine.DispatchEvents(context, plan.RequiredPreExecutionEvent);
     }
 
     private async Task CheckAndRunBeforeDispatchingPreExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)
