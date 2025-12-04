@@ -4,7 +4,7 @@ using InzExecutionEvent.Contracts.ExecutionNotification;
 
 namespace InzExecutionEvent.Engines;
 
-public class ExecutionNotificationEngine
+internal class ExecutionNotificationEngine
 {
     private Dictionary<string, IExecutionNotification> _notificationsMap = new();
     private Dictionary<string, IExecutionNotificationHandler> _notificationHandlersMap = new();

@@ -15,7 +15,7 @@ public class ExecutionInputDataTypeAttribute : Attribute
         ValidatorType = validatorType;
         PropertiesCasing = casing;
     }
-        
+
     public ExecutionInputDataTypeAttribute(
         Type requestDataType,
         RequestDataPropertiesCasing casing = RequestDataPropertiesCasing.CamelCase
