@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace InzExecutionEvent.Engines;
 
-public class ExecutionConfigurationEngine
+internal class ExecutionConfigurationEngine
 {
     private Dictionary<string, IExecutionConfigurationOptions> ConfigurationOptionsMap { get; } = new();
 

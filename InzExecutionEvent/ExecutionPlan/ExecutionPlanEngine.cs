@@ -8,8 +8,8 @@ using InzExecutionEvent.ExecutionEvent;
 
 namespace InzExecutionEvent.ExecutionPlan;
 
-public class ExecutionPlanEngine(
-    EventEngine eventEngine,
+internal class ExecutionPlanEngine(
+    ExecutionEventEngine executionEventEngine,
     ExecutionNotificationEngine executionNotificationEngine,
     ExecutionConfigurationEngine executionConfigurationEngine
 )
@@ -51,7 +51,7 @@ public class ExecutionPlanEngine(
         // if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
         if (plan.RequirePermissionCheck) ExecutionPlanUtility.RequirePermissionsCheck(context, plan);
         if (plan.HasInputData) ExecutionPlanUtility.HasRequestData(context, plan);
-        await eventEngine.DispatchEvents(context, plan.RequestEventsQueue);
+        await executionEventEngine.DispatchEvents(context, plan.RequestEventsQueue);
     }
 
     public async Task PerformExecution(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -92,7 +92,7 @@ public class ExecutionPlanEngine(
         if (!plan.HasEvents) return;
         var eventsContract = (IExecutionEventsContract)RegisteredExecutionPlanInstancesMap[plan.PlanId];
         if (eventsContract.PostExecutionEvents.Length == 0) return;
-        await eventEngine.DispatchEvents(context, eventsContract.PostExecutionEvents);
+        await executionEventEngine.DispatchEvents(context, eventsContract.PostExecutionEvents);
     }
 
     private async Task CheckAndRunExecutionTask(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -112,7 +112,7 @@ public class ExecutionPlanEngine(
         if (!plan.HasEvents) return;
         var eventsContract = (IExecutionEventsContract)RegisteredExecutionPlanInstancesMap[plan.PlanId];
         if (eventsContract.PreExecutionEvents.Length == 0) return;
-        await eventEngine.DispatchEvents(context, eventsContract.PreExecutionEvents);
+        await executionEventEngine.DispatchEvents(context, eventsContract.PreExecutionEvents);
     }
 
     private async Task CheckAndRunBeforeDispatchingPreExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)

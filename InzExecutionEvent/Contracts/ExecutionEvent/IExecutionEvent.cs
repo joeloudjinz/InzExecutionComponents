@@ -1,5 +1,3 @@
-
-
 using InzExecutionEvent.Contracts.ExecutionContext;
 
 namespace InzExecutionEvent.Contracts.ExecutionEvent;

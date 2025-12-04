@@ -6,13 +6,13 @@ public class ExecutionResult<TValue> where TValue : IExecutionResultContract
 {
     private readonly TValue? _value;
     private readonly ExecutionFailure? _error;
-    
+
     public TValue? Result => _value;
     public ExecutionFailure? Failure => _error;
-    
+
     public bool IsError { get; }
     public bool IsSuccess => !IsError;
-    
+
     private ExecutionResult(ExecutionFailure error)
     {
         IsError = false;
@@ -24,7 +24,7 @@ public class ExecutionResult<TValue> where TValue : IExecutionResultContract
         IsError = false;
         _value = value;
     }
-    
+
     public static implicit operator ExecutionResult<TValue>(TValue value) => new(value);
     public static implicit operator ExecutionResult<TValue>(ExecutionFailure error) => new(error);
 }

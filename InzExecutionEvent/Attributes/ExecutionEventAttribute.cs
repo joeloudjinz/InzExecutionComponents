@@ -38,41 +38,54 @@ public class ExecutionEventAttribute : BaseExecutionEventAttribute
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-public class ContextExecutionEventAttribute : BaseExecutionEventAttribute
+public class ServiceExecutionEventAttribute : BaseExecutionEventAttribute
 {
-    /// <summary>
-    ///     Register an execution event with an event type set to [EventType.Context], registered event requires the specified
-    ///     metadata resources and the context resources. <br/>
-    /// Use named parameters to distinguish between different constructors.
-    /// </summary>
-    /// <param name="name">Event Name</param>
-    /// <param name="requiredMetadataKeys">Resources keys to expect in IExecutionContext.ExecutionMetaData</param>
-    /// <param name="inputType">The event input type</param>
-    /// <param name="outputType">The event output type</param>
-    /// <param name="requiredConfigurations">Configuration options that are required to execute this event, options will be loaded into context's metadata</param>
-    /// <param name="requiredStoreKeys">Resources keys to expect in IServiceExecutionContext.Store</param>
-    public ContextExecutionEventAttribute(
+    public ServiceExecutionEventAttribute(string name)
+    {
+        Name = name;
+        EventType = EventType.Service;
+    }
+
+    public ServiceExecutionEventAttribute(
         string name,
-        string[] requiredMetadataKeys,
-        Type? inputType = null,
-        Type? outputType = null,
-        string[]? requiredConfigurations = null,
-        string[]? requiredStoreKeys = null
+        string[] requiredStoreKeys
     )
     {
         Name = name;
-        EventType = EventType.Context;
-        RequiredMetadataKeys = requiredMetadataKeys;
-        RequiredConfigurations = requiredConfigurations ?? [];
-        RequiredStoreKeys = requiredStoreKeys ?? [];
+        EventType = EventType.Service;
+        RequiredStoreKeys = requiredStoreKeys;
+    }
+
+    public ServiceExecutionEventAttribute(
+        string name,
+        Type inputType,
+        Type outputType
+    )
+    {
+        Name = name;
+        EventType = EventType.Service;
         InputType = inputType;
         OutputType = outputType;
     }
-}
-
-[AttributeUsage(AttributeTargets.Class)]
-public class ServiceExecutionEventAttribute : BaseExecutionEventAttribute
-{
+    
+    public ServiceExecutionEventAttribute(
+        string name,
+        string[] requiredStoreKeys,
+        string[]? requiredMetadataKeys = null,
+        string[]? requiredConfigurations = null,
+        Type? inputType = null,
+        Type? outputType = null
+    )
+    {
+        Name = name;
+        EventType = EventType.Service;
+        RequiredStoreKeys = requiredStoreKeys;
+        RequiredMetadataKeys = requiredMetadataKeys ?? [];
+        RequiredConfigurations = requiredConfigurations ?? [];
+        InputType = inputType;
+        OutputType = outputType;
+    }
+    
     /// <summary>
     ///     Register an execution event with an event type set to [EventType.Service], registered event requires only the
     ///     specified context resources. <br/>
@@ -82,7 +95,12 @@ public class ServiceExecutionEventAttribute : BaseExecutionEventAttribute
     /// <param name="requiredStoreKeys">Resources keys to expect in IServiceExecutionContext.Store</param>
     /// <param name="inputType">The event input type</param>
     /// <param name="outputType">The event output type</param>
-    public ServiceExecutionEventAttribute(string name, string[] requiredStoreKeys, Type? inputType = null, Type? outputType = null)
+    public ServiceExecutionEventAttribute(
+        string name,
+        string[] requiredStoreKeys,
+        Type? inputType = null,
+        Type? outputType = null
+    )
     {
         Name = name;
         EventType = EventType.Service;

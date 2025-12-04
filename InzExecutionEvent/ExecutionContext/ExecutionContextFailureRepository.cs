@@ -13,7 +13,7 @@ public class ExecutionContextFailureRepository : IExecutionContextFailureReposit
     {
         _failures.Add(failure);
     }
-    
+
     // public void Fatal(DataAccessFailure failure)
     // {
     //     _failures.Add(ExecutionResultUtility.FromDataAccessFailure(failure));
