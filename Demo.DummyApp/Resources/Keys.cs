@@ -1,5 +1,10 @@
 namespace Demo.DummyApp.Resources;
 
+public static class ExecutionPlanKeys
+{
+    public const string Test = "execution.plan.test";
+}
+
 public static class ExecutionEventKeys
 {
     public const string TestEvent1 = "inz.event.service.test-1";

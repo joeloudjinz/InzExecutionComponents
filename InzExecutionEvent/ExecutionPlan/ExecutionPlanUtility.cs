@@ -3,7 +3,6 @@ using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionEvent;
 using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Enums;
-using InzExecutionEvent.Resources;
 
 namespace InzExecutionEvent.ExecutionPlan;
 
@@ -55,16 +54,18 @@ public static class ExecutionPlanUtility
             if (attribute is ExecutionOutputDataTypeAttribute executionOutputDataTypeAttribute)
             {
                 contract.OutputDataType = executionOutputDataTypeAttribute.Type;
+                continue;
             }
 
             if (attribute is RegisterPreExecutionEvents registerPreExecutionEventsAttribute)
             {
-                contract.RequiredPreExecutionEvent = registerPreExecutionEventsAttribute.Events;
+                contract.RequiredPreExecutionEvents = contract.RequiredPreExecutionEvents.Append(registerPreExecutionEventsAttribute.Events).ToArray();
+                continue;
             }
 
             if (attribute is RegisterPostExecutionEvents registerPostExecutionEventsAttribute)
             {
-                contract.RequiredPostExecutionEvent = registerPostExecutionEventsAttribute.Events;
+                contract.RequiredPostExecutionEvents = contract.RequiredPostExecutionEvents.Append(registerPostExecutionEventsAttribute.Events).ToArray();
             }
         }
     }

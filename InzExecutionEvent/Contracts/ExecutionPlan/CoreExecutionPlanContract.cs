@@ -11,8 +11,8 @@ public class CoreExecutionPlanContract : IExecutionPlanContract
     public bool ShouldRunExecutionTask { get; set; }
     public bool ShouldRunAfterDispatchingPostExecutionEventsTask { get; set; }
     public bool HasEvents { get; set; }
-    public string[][] RequiredPreExecutionEvent { get; set; } = [];
-    public string[][] RequiredPostExecutionEvent { get; set; } = [];
+    public string[][] RequiredPreExecutionEvents { get; set; } = [];
+    public string[][] RequiredPostExecutionEvents { get; set; } = [];
     public Queue<string[]> RequestEventsQueue { get; set; } = new();
     public bool RequirePermissionCheck { get; set; }
     public List<string> Permissions { get; set; } = [];

@@ -23,7 +23,9 @@ internal class ExecutionPlanEngine(
         typeof(ExecutionOutputDataTypeAttribute),
         typeof(ExecutionConfigurationOptionsAttribute),
         typeof(PublishExecutionNotificationsAttribute),
-        typeof(ExecutionPlanAttribute)
+        typeof(ExecutionPlanAttribute),
+        typeof(RegisterPreExecutionEvents),
+        typeof(RegisterPostExecutionEvents)
     ];
 
     private readonly List<Type> _processableExecutionInterfaces =
@@ -89,9 +91,8 @@ internal class ExecutionPlanEngine(
 
     private async Task CheckAndDispatchPostExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        if (!plan.HasEvents) return;
-        if (plan.RequiredPostExecutionEvent.Length == 0) return;
-        await executionEventEngine.DispatchEvents(context, plan.RequiredPostExecutionEvent);
+        if (plan.RequiredPostExecutionEvents.Length == 0) return;
+        await executionEventEngine.DispatchEvents(context, plan.RequiredPostExecutionEvents);
     }
 
     private async Task CheckAndRunExecutionTask(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -107,9 +108,8 @@ internal class ExecutionPlanEngine(
 
     private async Task CheckAndDispatchPreExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        if (!plan.HasEvents) return;
-        if (plan.RequiredPreExecutionEvent.Length == 0) return;
-        await executionEventEngine.DispatchEvents(context, plan.RequiredPreExecutionEvent);
+        if (plan.RequiredPreExecutionEvents.Length == 0) return;
+        await executionEventEngine.DispatchEvents(context, plan.RequiredPreExecutionEvents);
     }
 
     private async Task CheckAndRunBeforeDispatchingPreExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)
@@ -131,7 +131,7 @@ internal class ExecutionPlanEngine(
 
     private IExecutionPlanContract CreateExecutionDataContractFromExecutionContractInstance(IExecutionRegistryContract contract)
     {
-        var planContract = new Contracts.ExecutionPlan.CoreExecutionPlanContract { PlanId = Guid.NewGuid() };
+        var planContract = new CoreExecutionPlanContract { PlanId = Guid.NewGuid() };
         var contractType = contract.GetType();
         ExecutionPlanUtility.ProcessAttributes(
             planContract,
