@@ -7,7 +7,7 @@ namespace InzExecutionEvent.ExecutionEvent;
 
 internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEngine, ExecutionNotificationEngine executionNotificationEngine)
 {
-    public static readonly Type[] ProcessableAttributes =
+    private static readonly Type[] ProcessableAttributes =
     [
         typeof(BaseExecutionEventAttribute),
         typeof(ExecutionEventAttribute),
@@ -17,11 +17,10 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
 
     private readonly Dictionary<string, EventContract> _registeredEventsContracts = new();
 
-    public void RegisterEvents(ICollection<IExecutionEvent> events)
+    public void RegisterEvents(ICollection<Type> events)
     {
-        foreach (var e in events)
+        foreach (var type in events)
         {
-            var type = e.GetType();
             var attributes = type.GetCustomAttributes(true).Where(a => ProcessableAttributes.Contains(a.GetType())).ToList();
             var eventName = BuildAndRegisterEventContract(type, attributes);
             ProcessEventAttributesAndUpdateEventContract(eventName, attributes);
@@ -82,34 +81,37 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         }
     }
 
-    private Task ProcessEventTypeAndDispatchEvent(IExecutionContext context, string name)
+    private async Task ProcessEventTypeAndDispatchEvent(IExecutionContext context, string name)
     {
-        if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
+        if (!_registeredEventsContracts.TryGetValue(name, out var contract)) throw new Exception($"Event [{name}] not found");
 
-        var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(context.ServiceProvider, model);
-        CheckIfEventRequiresMetadataResourcesContext(context, name);
-        CheckIfEventRequiresStoreResourcesAndLoadResourcesIntoContext(context, name);
+        CheckIfEventRequiresContextMetadataResources(context, name);
+        CheckIfEventRequiresContextStoreResources(context, name);
         CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(context, name);
-        instance.PerformEventTask(context);
-        return CheckIfEventPublishesSystemNotificationAndPublish(context, name);
+
+        var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(context.ServiceProvider, contract);
+        await instance.PerformEventTask(context);
+
+        // TODO enable execution notification feature
+        // await CheckIfEventPublishesSystemNotificationAndPublish(context, name);
     }
 
-    private Task CheckIfEventPublishesSystemNotificationAndPublish(IExecutionContext context, string name)
-    {
-        if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
-        return model.RequiredSystemNotifications.Length == 0
-            ? Task.CompletedTask
-            : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
-    }
+    // private Task CheckIfEventPublishesSystemNotificationAndPublish(IExecutionContext context, string name)
+    // {
+    //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
+    //     return model.RequiredSystemNotifications.Length == 0
+    //         ? Task.CompletedTask
+    //         : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
+    // }
 
-    private void CheckIfEventRequiresMetadataResourcesContext(IExecutionContext context, string name)
+    private void CheckIfEventRequiresContextMetadataResources(IExecutionContext context, string name)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
         if (model.RequiredMetadataKeys.Length == 0) return;
         context.MetaData.Check(model.RequiredMetadataKeys);
     }
 
-    private void CheckIfEventRequiresStoreResourcesAndLoadResourcesIntoContext(IServiceExecutionContext context, string name)
+    private void CheckIfEventRequiresContextStoreResources(IServiceExecutionContext context, string name)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
         if (model.RequiredStoreKeys.Length == 0) return;

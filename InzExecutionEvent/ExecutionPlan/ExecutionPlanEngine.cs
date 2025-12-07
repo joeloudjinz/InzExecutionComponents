@@ -1,3 +1,4 @@
+using System.Reflection;
 using InzExecutionEvent.Attributes;
 using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionEvent;
@@ -5,6 +6,8 @@ using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Engines;
 using InzExecutionEvent.ExecutionContext;
 using InzExecutionEvent.ExecutionEvent;
+using InzExecutionEvent.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InzExecutionEvent.ExecutionPlan;
 
@@ -14,7 +17,7 @@ internal class ExecutionPlanEngine(
     ExecutionConfigurationEngine executionConfigurationEngine
 )
 {
-    private Dictionary<Guid, IExecutionRegistryContract> RegisteredExecutionPlanInstancesMap { get; } = new();
+    public IServiceProvider ServiceProvider { get; set; } = null!;
 
     private readonly List<Type> _processableAttributes =
     [
@@ -30,7 +33,6 @@ internal class ExecutionPlanEngine(
 
     private readonly List<Type> _processableExecutionInterfaces =
     [
-        // typeof(IExecutionEventsContract),
         typeof(IPreEventsExecutionContract),
         typeof(IExecutionContract<IExecutionResultContract>),
         typeof(IPostEventsExecutionContract)
@@ -38,23 +40,39 @@ internal class ExecutionPlanEngine(
 
     public List<IExecutionPlanContract> RegisteredExecutionPlanContracts { get; } = [];
 
-    public void RegisterExecutionPlans(IEnumerable<IExecutionRegistryContract> executionContracts)
+    public void StartEngine(IServiceProvider services)
     {
-        foreach (var executionContract in executionContracts)
-        {
-            var dataPlanContract = CreateExecutionDataContractFromExecutionContractInstance(executionContract);
-            if (!dataPlanContract.IsRegistered) continue;
-            RegisteredExecutionPlanInstancesMap.Add(dataPlanContract.PlanId, executionContract);
-        }
+        ServiceProvider = services;
     }
 
-    // public async Task LoadAndDispatchRequestExecutionEvents(ISystemExecutionContext context, IExecutionPlanContract plan)
-    // {
-    //     if (plan.RequireAuthentication) ExecutionPlanUtility.RequiresAuthentication(context, plan);
-    //     if (plan.RequirePermissionCheck) ExecutionPlanUtility.RequirePermissionsCheck(context, plan);
-    //     if (plan.HasInputData) ExecutionPlanUtility.HasRequestData(context, plan);
-    //     await executionEventEngine.DispatchEvents(context, plan.RequestEventsQueue);
-    // }
+    public void RegisterExecutionPlans(Assembly assembly, IServiceCollection services)
+    {
+        var executionPlanTypes = Scouters.ExecutionPlanTypes(assembly);
+        foreach (var executionPlanType in executionPlanTypes)
+        {
+            var planContract = new CoreExecutionPlanContract
+            {
+                PlanId = Guid.NewGuid(),
+                ImplementationType = executionPlanType,
+                ImplementationTypeId = executionPlanType.Name
+            };
+
+            ExecutionPlanUtility.ProcessAttributes(
+                planContract,
+                executionPlanType.GetCustomAttributes(false).Where(a => _processableAttributes.Contains(a.GetType())).ToList()
+            );
+            if (!planContract.IsRegistered) continue;
+
+            planContract.DependencyRegistrationKey = $"ExecutionPlan.{planContract.ImplementationTypeId}.{planContract.PlanId}";
+            Console.WriteLine("[RegisterExecutionPlans()] ----> " + planContract.DependencyRegistrationKey);
+            ExecutionPlanUtility.ProcessInterfaces(
+                planContract,
+                executionPlanType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
+            );
+            RegisteredExecutionPlanContracts.Add(planContract);
+            services.AddKeyedSingleton(serviceType: executionPlanType, serviceKey: planContract.DependencyRegistrationKey, implementationType: executionPlanType);
+        }
+    }
 
     public async Task PerformExecution(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
@@ -74,6 +92,8 @@ internal class ExecutionPlanEngine(
 
     private async Task CheckAndPublishSystemNotificationsOfExecutionPlan(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
+        return;
+        // TODO enable execution notification feature
         if (plan.ExecutionNotificationToPublish.Length == 0) return;
         await executionNotificationEngine.HandleNotifications(context, plan.ExecutionNotificationToPublish);
     }
@@ -81,10 +101,9 @@ internal class ExecutionPlanEngine(
     private async Task CheckAndRunAfterDispatchingPostExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
         if (!plan.ShouldRunAfterDispatchingPostExecutionEventsTask) return;
-        if (RegisteredExecutionPlanInstancesMap[plan.PlanId] is not IPostEventsExecutionContract instance)
-        {
-            throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null.");
-        }
+
+        var instance = GetExecutionPlanFromDependencyContainer<IPostEventsExecutionContract>(plan);
+        if (instance is null) throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null."); // TODO improve this error message
 
         await instance.AfterDispatchingPostExecutionEvents(context);
     }
@@ -98,10 +117,9 @@ internal class ExecutionPlanEngine(
     private async Task CheckAndRunExecutionTask(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
         if (!plan.ShouldRunExecutionTask) return;
-        if (RegisteredExecutionPlanInstancesMap[plan.PlanId] is not IExecutionContract<IExecutionResultContract> instance)
-        {
-            throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null.");
-        }
+
+        var instance = GetExecutionPlanFromDependencyContainer<IExecutionContract<IExecutionResultContract>>(plan);
+        if (instance is null) throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null."); // TODO improve this error message
 
         await instance.Execute(context);
     }
@@ -115,10 +133,9 @@ internal class ExecutionPlanEngine(
     private async Task CheckAndRunBeforeDispatchingPreExecutionEventsTask(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
         if (!plan.ShouldRunBeforeDispatchingPreExecutionEventsTask) return;
-        if (RegisteredExecutionPlanInstancesMap[plan.PlanId] is not IPreEventsExecutionContract instance)
-        {
-            throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null.");
-        }
+
+        var instance = GetExecutionPlanFromDependencyContainer<IPreEventsExecutionContract>(plan);
+        if (instance is null) throw new NullReferenceException($"The execution plan {plan.PlanId} instance is null."); // TODO improve this error message
 
         await instance.BeforeDispatchingPreExecutionEvents(context);
     }
@@ -129,20 +146,15 @@ internal class ExecutionPlanEngine(
         executionConfigurationEngine.LoadConfigurationOptionsIntoContext(context, plan.RequiredExecutionConfigurations);
     }
 
-    private IExecutionPlanContract CreateExecutionDataContractFromExecutionContractInstance(IExecutionRegistryContract contract)
+    private T? GetExecutionPlanFromDependencyContainer<T>(IExecutionPlanContract plan)
     {
-        var planContract = new CoreExecutionPlanContract { PlanId = Guid.NewGuid() };
-        var contractType = contract.GetType();
-        ExecutionPlanUtility.ProcessAttributes(
-            planContract,
-            contractType.GetCustomAttributes(false).Where(a => _processableAttributes.Contains(a.GetType())).ToList()
-        );
-        if (!planContract.IsRegistered) return planContract;
-        ExecutionPlanUtility.ProcessInterfaces(
-            planContract,
-            contractType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
-        );
-        RegisteredExecutionPlanContracts.Add(planContract);
-        return planContract;
+        try
+        {
+            return (T)ServiceProvider.GetRequiredKeyedService(plan.ImplementationType, plan.DependencyRegistrationKey);
+        }
+        catch
+        {
+            return default;
+        }
     }
 }

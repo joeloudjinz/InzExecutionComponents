@@ -4,17 +4,17 @@ namespace InzExecutionEvent.ExecutionContext;
 
 internal static class ExecutionContextStaticEngine
 {
-    // public static ISystemExecutionContext Build(IServiceProvider provider)
-    // {
-    //     return new CoreExecutionContext
-    //     {
-    //         Store = new ExecutionContextDataStore(),
-    //         Failures = new ExecutionContextFailureRepository(),
-    //         Results = new ExecutionContextResultRepository(),
-    //         Response = new ExecutionGroupResponse(),
-    //         ServiceProvider = provider
-    //     };
-    // }
+    public static ISystemExecutionContext Build(IServiceProvider provider)
+    {
+        return new CoreExecutionContext
+        {
+            Store = new ExecutionContextDataStore(),
+            Failures = new ExecutionContextFailureRepository(),
+            Results = new ExecutionContextResultRepository(),
+            // Response = new ExecutionResponse(),
+            ServiceProvider = provider
+        };
+    }
 
     public static bool CheckAndProcessFailures(ISystemExecutionContext context)
     {

@@ -27,8 +27,8 @@ internal class ExecutionNotificationEngine
         foreach (var name in notifications)
         {
             if (!_notificationsMap.ContainsKey(name)) throw new Exception($"System notification [{name}] is not registered.");
-            if (!_notificationToHandlersMap.ContainsKey(name)) throw new Exception($"System notification [{name}] is not mapped to any handler.");
-            if (!_notificationToHandlersMap[name].Any())
+            if (!_notificationToHandlersMap.TryGetValue(name, out var notificationHandlerNames)) throw new Exception($"System notification [{name}] is not mapped to any handler.");
+            if (notificationHandlerNames.IsEmpty)
             {
                 Console.WriteLine($"System notification [{name}] doesn't have any handler!");
                 continue;
@@ -36,8 +36,8 @@ internal class ExecutionNotificationEngine
 
             foreach (var handler in _notificationToHandlersMap[name])
             {
-                if (!_notificationHandlersMap.ContainsKey(handler)) throw new Exception($"System notification handler [{handler}] is not registered.");
-                handlers.Add(_notificationHandlersMap[handler]);
+                if (!_notificationHandlersMap.TryGetValue(handler, out var notificationHandlers)) throw new Exception($"System notification handler [{handler}] is not registered.");
+                handlers.Add(notificationHandlers);
             }
         }
 

@@ -14,7 +14,7 @@ namespace Demo.DummyApp.ExecutionPlans;
 [RegisterPreExecutionEvents(ExecutionEventKeys.TestEvent1)]
 [RegisterPreExecutionEvents(ExecutionEventKeys.TestEvent2, ExecutionEventKeys.TestEvent3)]
 [RegisterPostExecutionEvents(ExecutionEventKeys.TestEvent4)]
-[PublishExecutionNotifications([ExecutionNotificationKeys.Test])]
+// [PublishExecutionNotifications([ExecutionNotificationKeys.Test])]
 // [ExecutionConfigurationOptions([ConfigurationLabels.Test])]
 public class TestExecutionPlan : IExecutionContract<IExecutionResultContract>, IPreEventsExecutionContract, IPostEventsExecutionContract
 {

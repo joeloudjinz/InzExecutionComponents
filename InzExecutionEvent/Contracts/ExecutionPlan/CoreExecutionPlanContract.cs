@@ -3,6 +3,9 @@ namespace InzExecutionEvent.Contracts.ExecutionPlan;
 public class CoreExecutionPlanContract : IExecutionPlanContract
 {
     public Guid PlanId { get; set; }
+    public string DependencyRegistrationKey { get; set; } = string.Empty;
+    public Type ImplementationType { get; set; }
+    public string ImplementationTypeId { get; set; } = string.Empty;
     public bool IsRegistered { get; set; } = true;
     public string ExecutionLabel { get; set; } = string.Empty;
     public string ExecutionGroup { get; set; } = string.Empty;
@@ -10,12 +13,8 @@ public class CoreExecutionPlanContract : IExecutionPlanContract
     public bool ShouldRunBeforeDispatchingPreExecutionEventsTask { get; set; }
     public bool ShouldRunExecutionTask { get; set; }
     public bool ShouldRunAfterDispatchingPostExecutionEventsTask { get; set; }
-    public bool HasEvents { get; set; }
     public string[][] RequiredPreExecutionEvents { get; set; } = [];
     public string[][] RequiredPostExecutionEvents { get; set; } = [];
-    public Queue<string[]> RequestEventsQueue { get; set; } = new();
-    public bool RequirePermissionCheck { get; set; }
-    public List<string> Permissions { get; set; } = [];
     public bool HasInputData { get; set; }
     public bool ValidateInputData { get; set; }
     public Type InputDataType { get; set; }
@@ -23,5 +22,4 @@ public class CoreExecutionPlanContract : IExecutionPlanContract
     public Type? OutputDataType { get; set; }
     public string[] RequiredExecutionConfigurations { get; set; } = [];
     public string[] ExecutionNotificationToPublish { get; set; } = [];
-    public string Body { get; set; }
 }
