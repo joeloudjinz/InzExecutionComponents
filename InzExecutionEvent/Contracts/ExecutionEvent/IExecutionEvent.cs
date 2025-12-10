@@ -2,7 +2,7 @@ using InzExecutionEvent.Contracts.ExecutionContext;
 
 namespace InzExecutionEvent.Contracts.ExecutionEvent;
 
-public interface IExecutionEvent : IBaseEvent
+public interface IExecutionEvent
 {
-    public Task PerformEventTask(IServiceExecutionContext context);
+    public Task PerformEventTask(IExecutionContext context);
 }

@@ -47,6 +47,9 @@ public static class InzExecutionComponents
         var executionPlanEngine = services.GetRequiredService<ExecutionPlanEngine>();
         executionPlanEngine.StartEngine(services);
 
+        var executionEventEngine = services.GetRequiredService<ExecutionEventEngine>();
+        executionEventEngine.StartEngine(services);
+
         var executionNotificationEngine = services.GetRequiredService<ExecutionNotificationEngine>();
         executionNotificationEngine.StartEngine(services);
 

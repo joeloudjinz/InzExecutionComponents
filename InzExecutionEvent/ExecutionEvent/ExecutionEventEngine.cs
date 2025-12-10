@@ -7,6 +7,8 @@ namespace InzExecutionEvent.ExecutionEvent;
 
 internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEngine, ExecutionNotificationEngine executionNotificationEngine)
 {
+    private IServiceProvider ServiceProvider { get; set; } = null!;
+
     private static readonly Type[] ProcessableAttributes =
     [
         typeof(BaseExecutionEventAttribute),
@@ -16,6 +18,11 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     ];
 
     private readonly Dictionary<string, EventContract> _registeredEventsContracts = new();
+
+    public void StartEngine(IServiceProvider services)
+    {
+        ServiceProvider = services;
+    }
 
     public void RegisterEvents(ICollection<Type> events)
     {
@@ -89,7 +96,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         CheckIfEventRequiresContextStoreResources(context, name);
         CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(context, name);
 
-        var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(context.ServiceProvider, contract);
+        var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(ServiceProvider, contract);
         await instance.PerformEventTask(context);
 
         // TODO enable execution notification feature
@@ -111,7 +118,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         context.MetaData.Check(model.RequiredMetadataKeys);
     }
 
-    private void CheckIfEventRequiresContextStoreResources(IServiceExecutionContext context, string name)
+    private void CheckIfEventRequiresContextStoreResources(IExecutionContext context, string name)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new Exception($"Event [{name}] not found");
         if (model.RequiredStoreKeys.Length == 0) return;

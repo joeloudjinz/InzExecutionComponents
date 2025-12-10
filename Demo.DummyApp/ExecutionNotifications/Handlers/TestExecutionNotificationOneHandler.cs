@@ -8,7 +8,7 @@ namespace Demo.DummyApp.ExecutionNotifications.Handlers;
 [ExecutionNotificationHandler(ExecutionNotificationKeys.Test, ExecutionNotificationHandlerKeys.Test.Test1)]
 public class TestExecutionNotificationOneHandler : IExecutionNotificationHandler
 {
-    public async Task Handle(IServiceExecutionContext context)
+    public async Task Handle(IExecutionContext context)
     {
         await Task.Delay(1500);
         Console.WriteLine($"{GetType().Name} executed");

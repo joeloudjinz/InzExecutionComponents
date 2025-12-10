@@ -1,3 +1,4 @@
+using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.ExecutionContext;
 using InzExecutionEvent.ExecutionEvent;
 using InzExecutionEvent.ExecutionPlan;
@@ -6,8 +7,7 @@ namespace InzExecutionEvent.Contracts;
 
 public interface IExecutionComponentManager
 {
-    public void InitContext();
-    public Task LaunchExecution(string label);
+    public Task LaunchExecution(string label, IExecutionParametersContract parameters);
 }
 
 internal class ExecutionComponentManager : IExecutionComponentManager
@@ -28,17 +28,13 @@ internal class ExecutionComponentManager : IExecutionComponentManager
         _executionPlanEngine.ServiceProvider = serviceProvider;
     }
 
-    public void InitContext()
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task LaunchExecution(string label)
+    public async Task LaunchExecution(string label, IExecutionParametersContract parameters)
     {
         var plan = _executionPlanEngine.RegisteredExecutionPlanContracts.FirstOrDefault(p => p.ExecutionLabel.Equals(label));
-        if (plan is null) throw new InvalidOperationException($"Execution plan {label} not found");
+        if (plan is null) throw new InvalidOperationException($"Execution plan {label} was not found");
 
         var context = ExecutionContextStaticEngine.Build(_serviceProvider);
+        context.Store.Set(label, parameters);
         await _executionPlanEngine.PerformExecution(context, plan);
     }
 }

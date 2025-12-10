@@ -4,25 +4,23 @@ namespace InzExecutionEvent.ExecutionContext;
 
 internal static class ExecutionContextStaticEngine
 {
-    public static ISystemExecutionContext Build(IServiceProvider provider)
+    public static IExecutionContext Build(IServiceProvider provider)
     {
         return new CoreExecutionContext
         {
             Store = new ExecutionContextDataStore(),
             Failures = new ExecutionContextFailureRepository(),
             Results = new ExecutionContextResultRepository(),
-            // Response = new ExecutionResponse(),
-            ServiceProvider = provider
         };
     }
 
-    public static bool CheckAndProcessFailures(ISystemExecutionContext context)
-    {
-        if (!context.Failures.HasFailures()) return false;
-        context.Response.Successful = !context.Failures.HasFatal();
-        context.Response.Errors = context.Failures.Failures();
-        return context.Failures.HasFatal();
-    }
+    // public static bool CheckAndProcessFailures(ISystemExecutionContext context)
+    // {
+    //     if (!context.Failures.HasFailures()) return false;
+    //     context.Response.Successful = !context.Failures.HasFatal();
+    //     context.Response.Errors = context.Failures.Failures();
+    //     return context.Failures.HasFatal();
+    // }
 
     // public static void ProcessExecutionResult(ISystemExecutionContext context)
     // {

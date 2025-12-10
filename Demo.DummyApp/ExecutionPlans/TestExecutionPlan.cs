@@ -26,9 +26,13 @@ public class TestExecutionPlan : IExecutionContract<IExecutionResultContract>, I
 
     public async Task<ExecutionResult<IExecutionResultContract>> Execute(IExecutionContext context)
     {
-        // TODO get the input data
+        var data = context.Store.Get<TestOneInputData>(ExecutionPlanKeys.Test);
+        Console.WriteLine($"{GetType().Name} - data:");
+        Console.WriteLine($"{GetType().Name}    -> {data.One}");
+        Console.WriteLine($"{GetType().Name}    -> {data.Two}");
+        Console.WriteLine($"{GetType().Name}    -> {data.Three}");
 
-        await Task.Delay(2500);
+        await Task.Delay(1500);
 
         return new TestOneOutputData
         {
@@ -45,7 +49,7 @@ public class TestExecutionPlan : IExecutionContract<IExecutionResultContract>, I
     }
 }
 
-public record TestOneInputData : IExecutionResultContract
+public record TestOneInputData: IExecutionParametersContract
 {
     public string One { get; set; } = string.Empty;
     public bool Two { get; set; }

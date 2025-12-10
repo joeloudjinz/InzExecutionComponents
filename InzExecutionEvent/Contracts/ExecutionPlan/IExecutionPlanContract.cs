@@ -2,8 +2,7 @@ namespace InzExecutionEvent.Contracts.ExecutionPlan;
 
 public interface IExecutionPlanContract
 {
-    public Guid PlanId { get; set; }
-    public string DependencyRegistrationKey { get; set; }
+    public string RegistrationKey { get; set; }
     public Type ImplementationType { get; set; }
     public bool IsRegistered { get; set; }
     public string ExecutionLabel { get; set; }

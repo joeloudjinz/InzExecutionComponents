@@ -1,20 +1,27 @@
 using System.Collections.Immutable;
 using InzExecutionEvent.Contracts.ExecutionContext;
+using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Contracts.Models;
 
 namespace InzExecutionEvent.ExecutionContext;
 
-public class ExecutionContextResultRepository : IExecutionContextResultRepository
+public class ExecutionContextResultRepository : ISystemExecutionContextResultRepository
 {
     private readonly Dictionary<string, ExecutionResult<IExecutionResultContract>> _results = new();
 
-    public void Add<T>(ExecutionResult<T> result) where T : class, IExecutionResultContract
+    public void Add<T>(string key, ExecutionResult<T> result) where T : class, IExecutionResultContract
     {
-        // if (_results.ContainsKey(result.Label)) throw new Exception($"[{result.Label}] already exists in the result repository");
-        // _results.Add(result.Label, result);
+        if (_results.ContainsKey(key)) throw new Exception($"[{key}] already exists in the result repository");
+        _results.Add(key, result as ExecutionResult<IExecutionResultContract> ?? throw new Exception($"Result generic type {nameof(T)} doesn't implement {nameof(IExecutionResultContract)} interface"));
     }
 
     public ImmutableList<ExecutionResult<IExecutionResultContract>> Results() => _results.Values.ToImmutableList();
+
+    public ExecutionResult<T>? Get<T>(string key) where T : class, IExecutionResultContract
+    {
+        if (!_results.TryGetValue(key, out var result)) return null;
+        return result as ExecutionResult<T>;
+    }
 
     public bool Any() => _results.Count != 0;
 

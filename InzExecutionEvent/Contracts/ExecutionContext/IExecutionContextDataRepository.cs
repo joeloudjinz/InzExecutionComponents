@@ -7,6 +7,6 @@ public interface IExecutionContextDataRepository
     public void Set<T>(string key, T data);
     public (bool success, string missing) Check(ICollection<string> keys);
     public bool Has(string key);
-    public void Remove(string key);
+    public bool Remove(string key);
     public void RemoveRange(ICollection<string> keys);
 }

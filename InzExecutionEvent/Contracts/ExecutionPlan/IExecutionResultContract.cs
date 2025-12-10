@@ -1,4 +1,4 @@
-namespace InzExecutionEvent.Contracts.ExecutionContext;
+namespace InzExecutionEvent.Contracts.ExecutionPlan;
 
 public interface IExecutionResultContract
 {

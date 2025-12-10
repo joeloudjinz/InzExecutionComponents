@@ -8,7 +8,7 @@ namespace Demo.DummyApp.Events;
 [ServiceExecutionEvent(ExecutionEventKeys.TestEvent1, [])]
 public class TestEventOne : IExecutionEvent
 {
-    public async Task PerformEventTask(IServiceExecutionContext context)
+    public async Task PerformEventTask(IExecutionContext context)
     {
         await Task.Delay(1500);
         Console.WriteLine($"{GetType().Name} - PerformEventTask()");

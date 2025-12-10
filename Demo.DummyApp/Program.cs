@@ -1,3 +1,4 @@
+using Demo.DummyApp.ExecutionPlans;
 using Demo.DummyApp.Resources;
 using InzExecutionEvent;
 using InzExecutionEvent.Contracts;
@@ -11,6 +12,15 @@ var app = builder.Build();
 app.Services.UseInzExecutionComponents();
 
 var executionComponentManager = app.Services.GetRequiredService<IExecutionComponentManager>();
-await executionComponentManager.LaunchExecution(ExecutionPlanKeys.Test);
+await executionComponentManager.LaunchExecution(
+    label: ExecutionPlanKeys.Test,
+    parameters: new TestOneInputData
+    {
+        One = "One",
+        Two = false,
+        Three = 3
+    }
+);
 
+Console.WriteLine();
 Console.WriteLine("DONE!");

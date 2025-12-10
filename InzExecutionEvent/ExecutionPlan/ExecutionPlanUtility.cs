@@ -1,5 +1,4 @@
 using InzExecutionEvent.Attributes;
-using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionEvent;
 using InzExecutionEvent.Contracts.ExecutionPlan;
 using InzExecutionEvent.Enums;

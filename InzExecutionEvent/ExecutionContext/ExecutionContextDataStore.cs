@@ -1,27 +1,28 @@
+using System.Collections.Concurrent;
 using InzExecutionEvent.Contracts.ExecutionContext;
 
 namespace InzExecutionEvent.ExecutionContext;
 
 public class ExecutionContextDataStore : IExecutionContextDataRepository
 {
-    private readonly Dictionary<string, dynamic> _storedData = new();
+    private readonly ConcurrentDictionary<string, object> _storedData = new();
 
     public T? Get<T>(string key, T? defaultValue)
     {
-        if (_storedData.TryGetValue(key, out var value)) return value;
-        if (!_storedData.ContainsKey(key) && defaultValue is not null) return defaultValue;
-        return default;
+        if (!_storedData.TryGetValue(key, out var value) || value is not T typedValue) return defaultValue;
+        return typedValue;
     }
 
     public T Get<T>(string key)
     {
-        if (!_storedData.ContainsKey(key)) throw new Exception($"Missing key [{key}] in context data repository.");
-        return _storedData[key];
+        if (!_storedData.TryGetValue(key, out var value)) throw new KeyNotFoundException($"Missing key [{key}] in the context data store repository.");
+        if (value is not T typedValue) throw new InvalidCastException($"Cannot cast value to type {typeof(T).Name}");
+        return typedValue;
     }
 
     public void Set<T>(string key, T data)
     {
-        if (data is null) return;
+        if (data is null) throw new InvalidCastException("Context store repository should not contain null values, attempting to add null data.");
         _storedData[key] = data;
     }
 
@@ -40,11 +41,7 @@ public class ExecutionContextDataStore : IExecutionContextDataRepository
         return _storedData.ContainsKey(key);
     }
 
-    public void Remove(string key)
-    {
-        if (!Has(key)) return;
-        _storedData.Remove(key);
-    }
+    public bool Remove(string key) => _storedData.TryRemove(key, out _);
 
     public void RemoveRange(ICollection<string> keys)
     {

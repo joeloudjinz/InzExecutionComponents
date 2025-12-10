@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.Models;
 using InzExecutionEvent.Utilities;
@@ -7,26 +6,19 @@ namespace InzExecutionEvent.ExecutionContext;
 
 public class ExecutionContextFailureRepository : IExecutionContextFailureRepository
 {
-    private readonly List<ExecutionFailure> _failures = [];
+    private readonly Dictionary<string, ExecutionFailure> _failures = [];
 
-    public void Add(ExecutionFailure failure)
+    public void Add(string key, ExecutionFailure failure)
     {
-        _failures.Add(failure);
+        _failures.Add(key, failure);
     }
 
-    // public void Fatal(DataAccessFailure failure)
-    // {
-    //     _failures.Add(ExecutionResultUtility.FromDataAccessFailure(failure));
-    // }
-
-    public void Fatal(string code)
+    public void Fatal(string key, string code)
     {
-        _failures.Add(ExecutionResultUtility.CodeFailure(code));
+        _failures.Add(key, ExecutionResultUtility.CodeFailure(code));
     }
 
     public bool HasFailures() => _failures.Count != 0;
-    public bool HasFatal() => _failures.Any(f => f.Fatal);
-
+    public bool HasFatal() => _failures.Any(f => f.Value.Fatal);
     public int Count() => _failures.Count;
-    public ReadOnlyCollection<ExecutionFailure> Failures() => _failures.AsReadOnly();
 }
