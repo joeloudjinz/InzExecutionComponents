@@ -1,11 +1,9 @@
 using Demo.DummyApp.Resources;
-using InzExecutionEvent.Contracts.ExecutionNotification;
+using InzExecutionEvent.Attributes;
 
 namespace Demo.DummyApp.ExecutionNotifications;
 
-public class TestExecutionNotification : IExecutionNotification
+[ExecutionNotification(ExecutionNotificationKeys.Test)]
+public class TestExecutionNotification
 {
-    public string Name { get; set; } = ExecutionNotificationKeys.Test;
-    public string[] RequiredStoreKeys { get; set; } = [];
-    public string[] ProvidedStoreKeys { get; set; } = [];
 }

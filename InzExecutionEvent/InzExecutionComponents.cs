@@ -32,9 +32,7 @@ public static class InzExecutionComponents
             Scouters.ExecutionEvents(assembly, services);
             executionEventEngine.RegisterEvents(Scouters.ExecutionEventTypes(assembly));
 
-            // TODO enable execution notification feature
-            // Scouters.ExecutionNotifications(assembly, services);
-            // executionNotificationEngine.RegisterNotificationAndHandlers();
+            executionNotificationEngine.RegisterExecutionNotificationAndHandlers(assembly, services);
 
             // TODO enable execution configuration feature
             // Scouters.ExecutionNotificationHandlers(assembly, services);
@@ -48,6 +46,10 @@ public static class InzExecutionComponents
     {
         var executionPlanEngine = services.GetRequiredService<ExecutionPlanEngine>();
         executionPlanEngine.StartEngine(services);
+
+        var executionNotificationEngine = services.GetRequiredService<ExecutionNotificationEngine>();
+        executionNotificationEngine.StartEngine(services);
+
         return services;
     }
 }

@@ -1,17 +1,16 @@
 using Demo.DummyApp.Resources;
+using InzExecutionEvent.Attributes;
 using InzExecutionEvent.Contracts.ExecutionContext;
 using InzExecutionEvent.Contracts.ExecutionNotification;
 
 namespace Demo.DummyApp.ExecutionNotifications.Handlers;
 
+[ExecutionNotificationHandler(ExecutionNotificationKeys.Test, ExecutionNotificationHandlerKeys.Test.Test3)]
 public class TestExecutionNotificationThreeHandler: IExecutionNotificationHandler
 {
-    public string HandlerName { get; set; } = ExecutionNotificationHandlerKeys.Test.Test3;
-    public string NotificationName { get; set; } = ExecutionNotificationKeys.Test;
-
     public async Task Handle(IServiceExecutionContext context)
     {
         await Task.Delay(1500);
-        Console.WriteLine($"{HandlerName}: {NotificationName}");
+        Console.WriteLine($"{GetType().Name} executed");
     }
 }

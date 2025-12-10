@@ -92,8 +92,6 @@ internal class ExecutionPlanEngine(
 
     private async Task CheckAndPublishSystemNotificationsOfExecutionPlan(ISystemExecutionContext context, IExecutionPlanContract plan)
     {
-        return;
-        // TODO enable execution notification feature
         if (plan.ExecutionNotificationToPublish.Length == 0) return;
         await executionNotificationEngine.HandleNotifications(context, plan.ExecutionNotificationToPublish);
     }
