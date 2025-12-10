@@ -1,7 +1,7 @@
 using Demo.DummyApp.Resources;
-using InzExecutionEvent.Attributes;
-using InzExecutionEvent.Contracts.ExecutionContext;
-using InzExecutionEvent.Contracts.ExecutionNotification;
+using InzExecutionComponents.Attributes;
+using InzExecutionComponents.Contracts.ExecutionContext;
+using InzExecutionComponents.Contracts.ExecutionNotification;
 
 namespace Demo.DummyApp.ExecutionNotifications.Handlers;
 

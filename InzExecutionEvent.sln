@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InzExecutionEvent", "InzExecutionEvent\InzExecutionEvent.csproj", "{4CB84026-8B59-40F0-9896-9D91CFC580BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InzExecutionComponents", "InzExecutionComponents\InzExecutionComponents.csproj", "{4CB84026-8B59-40F0-9896-9D91CFC580BF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DummyApp", "Demo.DummyApp\Demo.DummyApp.csproj", "{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}"
 EndProject

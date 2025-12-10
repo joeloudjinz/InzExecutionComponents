@@ -1,7 +1,7 @@
 using Demo.DummyApp.ExecutionPlans;
 using Demo.DummyApp.Resources;
-using InzExecutionEvent;
-using InzExecutionEvent.Contracts;
+using InzExecutionComponents;
+using InzExecutionComponents.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 

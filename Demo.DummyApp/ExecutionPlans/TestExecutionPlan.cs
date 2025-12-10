@@ -1,9 +1,9 @@
 using Demo.DummyApp.Resources;
-using InzExecutionEvent.Attributes;
-using InzExecutionEvent.Contracts.ExecutionContext;
-using InzExecutionEvent.Contracts.ExecutionEvent;
-using InzExecutionEvent.Contracts.ExecutionPlan;
-using InzExecutionEvent.Contracts.Models;
+using InzExecutionComponents.Attributes;
+using InzExecutionComponents.Contracts.ExecutionContext;
+using InzExecutionComponents.Contracts.ExecutionEvent;
+using InzExecutionComponents.Contracts.ExecutionPlan;
+using InzExecutionComponents.Contracts.Models;
 
 namespace Demo.DummyApp.ExecutionPlans;
 

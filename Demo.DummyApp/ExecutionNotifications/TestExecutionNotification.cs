@@ -1,5 +1,5 @@
 using Demo.DummyApp.Resources;
-using InzExecutionEvent.Attributes;
+using InzExecutionComponents.Attributes;
 
 namespace Demo.DummyApp.ExecutionNotifications;
 

@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\InzExecutionEvent\InzExecutionEvent.csproj" />
+      <ProjectReference Include="..\InzExecutionComponents\InzExecutionComponents.csproj" />
     </ItemGroup>
 
 </Project>

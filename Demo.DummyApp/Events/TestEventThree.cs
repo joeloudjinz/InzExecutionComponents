@@ -1,7 +1,7 @@
 using Demo.DummyApp.Resources;
-using InzExecutionEvent.Attributes;
-using InzExecutionEvent.Contracts.ExecutionContext;
-using InzExecutionEvent.Contracts.ExecutionEvent;
+using InzExecutionComponents.Attributes;
+using InzExecutionComponents.Contracts.ExecutionContext;
+using InzExecutionComponents.Contracts.ExecutionEvent;
 
 namespace Demo.DummyApp.Events;
 
