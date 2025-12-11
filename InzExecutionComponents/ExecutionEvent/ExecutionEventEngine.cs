@@ -2,6 +2,7 @@ using InzExecutionComponents.Attributes;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Engines;
+using InzExecutionComponents.Exception;
 
 namespace InzExecutionComponents.ExecutionEvent;
 
@@ -49,7 +50,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     {
         if (attributes.FirstOrDefault(a => a is BaseExecutionEventAttribute) is not BaseExecutionEventAttribute executionEventData)
         {
-            throw new Exception("Null object of [BaseExecutionEventAttribute] attribute!");
+            throw new System.Exception("Null object of [BaseExecutionEventAttribute] attribute!");
         }
 
         var model = new EventContract
@@ -92,12 +93,19 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var contract)) throw new InvalidOperationException($"Execution event [{name}] was not found");
 
-        CheckIfEventRequiresContextMetadataResources(context, name);
-        CheckIfEventRequiresContextStoreResources(context, name);
-        CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(context, name);
+        CheckIfEventRequiresContextMetadataResources(context, name, contract);
+        CheckIfEventRequiresContextStoreResources(context, name, contract);
+        // CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(context, name);
 
         var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(ServiceProvider, contract);
-        await instance.PerformEventTask(context);
+        try
+        {
+            await instance.PerformEventTask(context);
+        }
+        catch (System.Exception e)
+        {
+            throw new ExecutionEventException(name, contract, e);
+        }
 
         // TODO enable execution notification feature
         // await CheckIfEventPublishesSystemNotificationAndPublish(context, name);
@@ -111,24 +119,32 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     //         : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
     // }
 
-    private void CheckIfEventRequiresContextMetadataResources(IExecutionContext context, string name)
+    private void CheckIfEventRequiresContextMetadataResources(IExecutionContext context, string name, EventContract contract)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
         if (model.RequiredMetadataKeys.Length == 0) return;
-        context.MetaData.Check(model.RequiredMetadataKeys);
+
+        var results = context.MetaData.Check(model.RequiredMetadataKeys);
+        if (results.success) return;
+
+        throw new MissingContextKeyException(storageType: "metadata", key: results.missing, contract);
     }
 
-    private void CheckIfEventRequiresContextStoreResources(IExecutionContext context, string name)
+    private void CheckIfEventRequiresContextStoreResources(IExecutionContext context, string name, EventContract contract)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
         if (model.RequiredStoreKeys.Length == 0) return;
-        context.Store.Check(model.RequiredStoreKeys);
+
+        var results = context.Store.Check(model.RequiredStoreKeys);
+        if (results.success) return;
+
+        throw new MissingContextKeyException(storageType: "store", key: results.missing, contract);
     }
 
-    private void CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(IExecutionContext context, string name)
-    {
-        if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
-        if (model.RequiredConfigurations.Length == 0) return;
-        configurationEngine.LoadConfigurationOptionsIntoContext(context, model.RequiredConfigurations);
-    }
+    // private void CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(IExecutionContext context, string name)
+    // {
+    //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
+    //     if (model.RequiredConfigurations.Length == 0) return;
+    //     configurationEngine.LoadConfigurationOptionsIntoContext(context, model.RequiredConfigurations);
+    // }
 }

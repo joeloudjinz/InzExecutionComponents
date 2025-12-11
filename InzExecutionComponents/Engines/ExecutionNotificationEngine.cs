@@ -67,7 +67,7 @@ internal class ExecutionNotificationEngine
 
             if (handlerType.GetInterfaces().All(i => i != typeof(IExecutionNotificationHandler)))
             {
-                throw new Exception($"Execution notification handler of type [{handlerType}] does not implement {nameof(IExecutionNotificationHandler)} interface.");
+                throw new System.Exception($"Execution notification handler of type [{handlerType}] does not implement {nameof(IExecutionNotificationHandler)} interface.");
             }
 
             var contract = new ExecutionNotificationHandlerContract
@@ -95,13 +95,13 @@ internal class ExecutionNotificationEngine
         var handlers = new List<IExecutionNotificationHandler>();
         foreach (var name in notifications)
         {
-            if (!_notificationsMap.TryGetValue(name, out var notificationContract)) throw new Exception($"Execution notification [{name}] is not registered.");
-            if (notificationContract.Handlers.Length == 0) throw new Exception($"Execution notification [{name}] has no registered handler.");
+            if (!_notificationsMap.TryGetValue(name, out var notificationContract)) throw new System.Exception($"Execution notification [{name}] is not registered.");
+            if (notificationContract.Handlers.Length == 0) throw new System.Exception($"Execution notification [{name}] has no registered handler.");
 
             foreach (var handlerContract in notificationContract.Handlers)
             {
                 var handler = GetNotificationHandler(handlerContract);
-                if (handler is null) throw new Exception($"Execution notification handler of type [{handlerContract.ImplementationType.Name}] was not found.");
+                if (handler is null) throw new System.Exception($"Execution notification handler of type [{handlerContract.ImplementationType.Name}] was not found.");
                 handlers.Add(handler);
             }
         }
@@ -127,8 +127,8 @@ internal class ExecutionNotificationEngine
     //     var handlers = new List<IExecutionNotificationHandler>();
     //     foreach (var name in notifications)
     //     {
-    //         if (!_notificationsMap.ContainsKey(name)) throw new Exception($"System notification [{name}] is not registered.");
-    //         if (!_notificationToHandlersMap.TryGetValue(name, out var notificationHandlerNames)) throw new Exception($"System notification [{name}] is not mapped to any handler.");
+    //         if (!_notificationsMap.ContainsKey(name)) throw new System.Exception($"System notification [{name}] is not registered.");
+    //         if (!_notificationToHandlersMap.TryGetValue(name, out var notificationHandlerNames)) throw new System.Exception($"System notification [{name}] is not mapped to any handler.");
     //         if (notificationHandlerNames.IsEmpty)
     //         {
     //             Console.WriteLine($"System notification [{name}] doesn't have any handler!");
@@ -137,7 +137,7 @@ internal class ExecutionNotificationEngine
     //
     //         foreach (var handler in _notificationToHandlersMap[name])
     //         {
-    //             if (!_notificationHandlersMap.TryGetValue(handler, out var notificationHandlers)) throw new Exception($"System notification handler [{handler}] is not registered.");
+    //             if (!_notificationHandlersMap.TryGetValue(handler, out var notificationHandlers)) throw new System.Exception($"System notification handler [{handler}] is not registered.");
     //             handlers.Add(notificationHandlers);
     //         }
     //     }

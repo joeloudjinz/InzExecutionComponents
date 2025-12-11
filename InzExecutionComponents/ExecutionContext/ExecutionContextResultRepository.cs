@@ -11,8 +11,8 @@ public class ExecutionContextResultRepository : ISystemExecutionContextResultRep
 
     public void Add<T>(string key, ExecutionResult<T> result) where T : class, IExecutionResultContract
     {
-        if (_results.ContainsKey(key)) throw new Exception($"[{key}] already exists in the result repository");
-        _results.Add(key, result as ExecutionResult<IExecutionResultContract> ?? throw new Exception($"Result generic type {nameof(T)} doesn't implement {nameof(IExecutionResultContract)} interface"));
+        if (_results.ContainsKey(key)) throw new System.Exception($"[{key}] already exists in the result repository");
+        _results.Add(key, result as ExecutionResult<IExecutionResultContract> ?? throw new System.Exception($"Result generic type {nameof(T)} doesn't implement {nameof(IExecutionResultContract)} interface"));
     }
 
     public ImmutableList<ExecutionResult<IExecutionResultContract>> Results() => _results.Values.ToImmutableList();

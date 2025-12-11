@@ -5,11 +5,6 @@ namespace InzExecutionComponents.Utilities;
 
 public static class ExecutionResultUtility
 {
-    // public static ExecutionFailure<T> Success<T>(T result) where T: class, IExecutionResultContract
-    // {
-    //     return new ExecutionResult<T>(result);
-    // }
-
     public static ExecutionFailure CodeFailure(string code)
     {
         return new ExecutionFailure(code);
@@ -20,7 +15,7 @@ public static class ExecutionResultUtility
         return new ExecutionFailure(ExecutionFailureTypes.Validation, error);
     }
 
-    public static ExecutionFailure FromException(Exception ex)
+    public static ExecutionFailure FromException(System.Exception ex)
     {
         return new ExecutionFailure(ex);
     }

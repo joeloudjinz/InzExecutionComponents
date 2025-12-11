@@ -31,7 +31,7 @@ public class ExecutionFailure
         ExceptionStacktrace = string.Empty;
     }
 
-    public ExecutionFailure(Exception ex)
+    public ExecutionFailure(System.Exception ex)
     {
         Fatal = true;
         Type = ExecutionFailureTypes.Exception;

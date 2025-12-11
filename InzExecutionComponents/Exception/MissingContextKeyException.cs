@@ -1,0 +1,19 @@
+using InzExecutionComponents.Contracts.ExecutionPlan;
+using InzExecutionComponents.ExecutionEvent;
+
+namespace InzExecutionComponents.Exception;
+
+public class MissingContextKeyException : System.Exception
+{
+    public MissingContextKeyException(string storageType, string key, EventContract contract) : base(
+        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution event [{contract.Name}] with implementation type [{contract.InstanceType.FullName ?? contract.InstanceType.Name}]"
+    )
+    {
+    }
+
+    public MissingContextKeyException(string storageType, string key, IExecutionPlanContract contract) : base(
+        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution plane [{contract.ExecutionLabel}] with implementation type [{contract.ImplementationType.FullName ?? contract.ImplementationType.Name}]"
+    )
+    {
+    }
+}

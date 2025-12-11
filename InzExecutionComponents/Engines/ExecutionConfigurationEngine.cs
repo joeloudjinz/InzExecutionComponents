@@ -39,7 +39,7 @@ internal class ExecutionConfigurationEngine
         foreach (var label in labels)
         {
             if (ConfigurationOptionsMap.TryGetValue(label, out var configuration)) configuration.LoadIntoContextMetadata(context);
-            else throw new Exception($"Configuration with label {label} was not found");
+            else throw new System.Exception($"Configuration with label {label} was not found");
         }
     }
 }

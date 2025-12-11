@@ -1,4 +1,5 @@
 using InzExecutionComponents.Contracts.ExecutionPlan;
+using InzExecutionComponents.Exception;
 using InzExecutionComponents.ExecutionContext;
 using InzExecutionComponents.ExecutionEvent;
 using InzExecutionComponents.ExecutionPlan;
@@ -35,6 +36,13 @@ internal class ExecutionComponentManager : IExecutionComponentManager
 
         var context = ExecutionContextStaticEngine.Build(_serviceProvider);
         context.Store.Set(label, parameters);
-        await _executionPlanEngine.PerformExecution(context, plan);
+        try
+        {
+            await _executionPlanEngine.PerformExecution(context, plan);
+        }
+        catch (System.Exception e)
+        {
+            throw new ExecutionPlanException(label, e);
+        }
     }
 }
