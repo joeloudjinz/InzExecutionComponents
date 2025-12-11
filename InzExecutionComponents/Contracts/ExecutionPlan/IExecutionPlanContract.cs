@@ -5,9 +5,10 @@ public interface IExecutionPlanContract
     public string RegistrationKey { get; set; }
     public Type ImplementationType { get; set; }
     public bool IsRegistered { get; set; }
-    public string ExecutionLabel { get; set; }
-    public string? ExecutionGroup { get; set; }
+    public string Label { get; set; }
+    public string? Group { get; set; }
     public bool HasInputData { get; set; }
+    public string InputDataKey { get; set; }
     public bool ValidateInputData { get; set; }
     public Type InputDataType { get; set; }
     public Type? InputDataValidatorType { get; set; }

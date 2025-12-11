@@ -4,6 +4,7 @@ using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
 using InzExecutionComponents.Engines;
+using InzExecutionComponents.ExecutionContext;
 using InzExecutionComponents.ExecutionEvent;
 using InzExecutionComponents.Utilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,12 +60,12 @@ internal class ExecutionPlanEngine(
                 planContract,
                 executionPlanType.GetCustomAttributes(false).Where(a => _processableAttributes.Contains(a.GetType())).ToList()
             );
+
             if (!planContract.IsRegistered) continue;
-            
-            var randomSuffix = Guid.NewGuid().ToString().Split("-")[^5];
-            planContract.RegistrationKey = $"{planContract.ExecutionLabel}@{planContract.ImplementationTypeId}#{randomSuffix}";
-            Console.WriteLine("[RegisterExecutionPlans()] ----> " + planContract.RegistrationKey);
-            
+
+            planContract.RegistrationKey = GenerateExecutionPlanRegistrationKey(planContract);
+            if (planContract.HasInputData) planContract.InputDataKey = GenerateExecutionPlanParametersKey(planContract);
+
             ExecutionPlanUtility.ProcessInterfaces(
                 planContract,
                 executionPlanType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
@@ -74,8 +75,20 @@ internal class ExecutionPlanEngine(
         }
     }
 
-    public async Task PerformExecution(IExecutionContext context, IExecutionPlanContract plan)
+    public async Task PerformExecution(IExecutionPlanContract plan, IExecutionParametersContract? parameters)
     {
+        var context = new CoreExecutionContext
+        {
+            ExecutionPlanLabel = plan.Label,
+            ExecutionPlanRegistrationKey = plan.RegistrationKey,
+            ExecutionPlanInputDataKey = plan.InputDataKey,
+            Store = new ExecutionContextDataStore(),
+            Failures = new ExecutionContextFailureRepository(),
+            Results = new ExecutionContextResultRepository(),
+        };
+
+        if (plan.HasInputData && parameters is not null) context.Store.Set(GenerateExecutionPlanParametersKey(plan), parameters);
+
         CheckAndLoadRequiredConfigurationOptions(context, plan);
         await CheckAndRunBeforeDispatchingPreExecutionEventsTask(context, plan);
         if (CheckAndProcessFailures(context)) return;
@@ -136,6 +149,14 @@ internal class ExecutionPlanEngine(
         context.Failures.Add(plan.RegistrationKey, result.Failure!);
     }
 
+    private string GenerateExecutionPlanRegistrationKey(CoreExecutionPlanContract planContract)
+    {
+        var randomSuffix = Guid.NewGuid().ToString().Split("-")[^5];
+        return $"{planContract.Label}@{planContract.ImplementationTypeId}#{randomSuffix}";
+    }
+
+    private string GenerateExecutionPlanParametersKey(IExecutionPlanContract plan) => $"{plan.RegistrationKey}.Params";
+
     private async Task CheckAndDispatchPreExecutionEvents(IExecutionContext context, IExecutionPlanContract plan)
     {
         if (plan.RequiredPreExecutionEvents.Length == 0) return;
@@ -173,5 +194,11 @@ internal class ExecutionPlanEngine(
         {
             return default;
         }
+    }
+
+    public IExecutionPlanContract GetExecutionPlan(string label)
+    {
+        var plan = RegisteredExecutionPlanContracts.FirstOrDefault(p => p.Label.Equals(label));
+        return plan ?? throw new InvalidOperationException($"Execution plan {label} was not found");
     }
 }

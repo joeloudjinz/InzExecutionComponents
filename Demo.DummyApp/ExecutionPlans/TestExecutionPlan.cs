@@ -4,6 +4,7 @@ using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
 using InzExecutionComponents.Contracts.Models;
+using InzExecutionComponents.Extensions;
 
 namespace Demo.DummyApp.ExecutionPlans;
 
@@ -26,7 +27,8 @@ public class TestExecutionPlan : IExecutionContract<IExecutionResultContract>, I
 
     public async Task<ExecutionResult<IExecutionResultContract>> Execute(IExecutionContext context)
     {
-        var data = context.Store.Get<TestOneInputData>(ExecutionPlanKeys.Test);
+        var data = context.GetInputData<TestOneInputData>();
+
         Console.WriteLine($"{GetType().Name} - data:");
         Console.WriteLine($"{GetType().Name}    -> {data.One}");
         Console.WriteLine($"{GetType().Name}    -> {data.Two}");
@@ -49,7 +51,7 @@ public class TestExecutionPlan : IExecutionContract<IExecutionResultContract>, I
     }
 }
 
-public record TestOneInputData: IExecutionParametersContract
+public record TestOneInputData : IExecutionParametersContract
 {
     public string One { get; set; } = string.Empty;
     public bool Two { get; set; }

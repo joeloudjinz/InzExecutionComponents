@@ -12,7 +12,7 @@ public class MissingContextKeyException : System.Exception
     }
 
     public MissingContextKeyException(string storageType, string key, IExecutionPlanContract contract) : base(
-        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution plane [{contract.ExecutionLabel}] with implementation type [{contract.ImplementationType.FullName ?? contract.ImplementationType.Name}]"
+        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution plane [{contract.Label}] with implementation type [{contract.ImplementationType.FullName ?? contract.ImplementationType.Name}]"
     )
     {
     }

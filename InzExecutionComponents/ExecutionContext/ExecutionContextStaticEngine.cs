@@ -1,18 +1,19 @@
-using InzExecutionComponents.Contracts.ExecutionContext;
-
 namespace InzExecutionComponents.ExecutionContext;
 
 internal static class ExecutionContextStaticEngine
 {
-    public static IExecutionContext Build(IServiceProvider provider)
-    {
-        return new CoreExecutionContext
-        {
-            Store = new ExecutionContextDataStore(),
-            Failures = new ExecutionContextFailureRepository(),
-            Results = new ExecutionContextResultRepository(),
-        };
-    }
+    // public static IExecutionContext Build(IExecutionPlanContract plan, IServiceProvider provider)
+    // {
+    //     return new CoreExecutionContext
+    //     {
+    //         ExecutionPlanLabel = plan.Label,
+    //         ExecutionPlanRegistrationKey = plan.RegistrationKey,
+    //         ExecutionPlanInputDataKey = plan.InputDataKey,
+    //         Store = new ExecutionContextDataStore(),
+    //         Failures = new ExecutionContextFailureRepository(),
+    //         Results = new ExecutionContextResultRepository(),
+    //     };
+    // }
 
     // public static bool CheckAndProcessFailures(ISystemExecutionContext context)
     // {

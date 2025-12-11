@@ -17,8 +17,8 @@ public static class ExecutionPlanUtility
                 contract.IsRegistered = executor.ExecutionPlanType != ExecutionPlanType.Test;
                 if (!contract.IsRegistered) return;
 
-                contract.ExecutionLabel = executor.Name;
-                contract.ExecutionGroup = executor.Group;
+                contract.Label = executor.Name;
+                contract.Group = executor.Group;
                 if (string.IsNullOrEmpty(contract.MessagingQueueRequestKey)) contract.MessagingQueueRequestKey = executor.Name;
                 continue;
             }

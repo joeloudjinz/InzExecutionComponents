@@ -3,11 +3,11 @@ namespace InzExecutionComponents.Contracts.ExecutionPlan;
 public class CoreExecutionPlanContract : IExecutionPlanContract
 {
     public string RegistrationKey { get; set; } = string.Empty;
-    public Type ImplementationType { get; set; }
+    public Type ImplementationType { get; set; } = null!;
     public string ImplementationTypeId { get; set; } = string.Empty;
     public bool IsRegistered { get; set; } = true;
-    public string ExecutionLabel { get; set; } = string.Empty;
-    public string ExecutionGroup { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+    public string Group { get; set; } = string.Empty;
     public string MessagingQueueRequestKey { get; set; } = string.Empty;
     public bool ShouldRunBeforeDispatchingPreExecutionEventsTask { get; set; }
     public bool ShouldRunExecutionTask { get; set; }
@@ -15,8 +15,9 @@ public class CoreExecutionPlanContract : IExecutionPlanContract
     public string[][] RequiredPreExecutionEvents { get; set; } = [];
     public string[][] RequiredPostExecutionEvents { get; set; } = [];
     public bool HasInputData { get; set; }
+    public string InputDataKey { get; set; } = string.Empty;
     public bool ValidateInputData { get; set; }
-    public Type InputDataType { get; set; }
+    public Type? InputDataType { get; set; }
     public Type? InputDataValidatorType { get; set; }
     public Type? OutputDataType { get; set; }
     public string[] RequiredExecutionConfigurations { get; set; } = [];

@@ -1,6 +1,5 @@
 using InzExecutionComponents.Contracts.ExecutionPlan;
 using InzExecutionComponents.Exception;
-using InzExecutionComponents.ExecutionContext;
 using InzExecutionComponents.ExecutionEvent;
 using InzExecutionComponents.ExecutionPlan;
 
@@ -9,13 +8,14 @@ namespace InzExecutionComponents.Contracts;
 public interface IExecutionComponentManager
 {
     public Task LaunchExecution(string label, IExecutionParametersContract parameters);
+    public Task LaunchExecution(string label);
 }
 
 internal class ExecutionComponentManager : IExecutionComponentManager
 {
-    private readonly IServiceProvider _serviceProvider;
     private readonly ExecutionPlanEngine _executionPlanEngine;
     private readonly ExecutionEventEngine _executionEventEngine;
+    private readonly IServiceProvider _serviceProvider;
 
     public ExecutionComponentManager(
         IServiceProvider serviceProvider,
@@ -31,14 +31,25 @@ internal class ExecutionComponentManager : IExecutionComponentManager
 
     public async Task LaunchExecution(string label, IExecutionParametersContract parameters)
     {
-        var plan = _executionPlanEngine.RegisteredExecutionPlanContracts.FirstOrDefault(p => p.ExecutionLabel.Equals(label));
-        if (plan is null) throw new InvalidOperationException($"Execution plan {label} was not found");
+        var plan = _executionPlanEngine.GetExecutionPlan(label);
 
-        var context = ExecutionContextStaticEngine.Build(_serviceProvider);
-        context.Store.Set(label, parameters);
         try
         {
-            await _executionPlanEngine.PerformExecution(context, plan);
+            await _executionPlanEngine.PerformExecution(plan, parameters);
+        }
+        catch (System.Exception e)
+        {
+            throw new ExecutionPlanException(label, e);
+        }
+    }
+
+    public async Task LaunchExecution(string label)
+    {
+        var plan = _executionPlanEngine.GetExecutionPlan(label);
+
+        try
+        {
+            await _executionPlanEngine.PerformExecution(plan, null);
         }
         catch (System.Exception e)
         {
