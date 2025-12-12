@@ -1,3 +1,4 @@
+using System.Reflection;
 using InzExecutionComponents.Attributes;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
@@ -78,22 +79,53 @@ public static class ExecutionPlanUtility
         planContract.ShouldRunAfterDispatchingPostExecutionEventsTask = interfaces.Contains(typeof(IPostEventsExecutionContract));
     }
 
-    // public static void HasRequestData(IExecutionContext context, IExecutionPlanContract plan)
-    // {
-    //     context.MetaData.Set(InzMetaDataKeys.Request.RawBodyString, plan.Body);
-    //     context.MetaData.Set(InzMetaDataKeys.Request.BodyType, plan.InputDataType);
-    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.DeserializeRequestDataEvent]);
-    //     if (plan.ValidateInputData)
-    //     {
-    //         // TODO: put context resources for request data validator event
-    //         // plan.RequestEventsQueue.Enqueue(new[] {EventNames.ValidateRequestDataEvent});
-    //     }
-    // }
-    //
-    // public static void RequirePermissionsCheck(IExecutionContext context, IExecutionPlanContract plan)
-    // {
-    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.LoadUserPermissionsCacheEvent]);
-    //     context.MetaData.Set(InzMetaDataKeys.Request.PermissionsToCheck, plan.Permissions);
-    //     plan.RequestEventsQueue.Enqueue([InzEvents.ContextEvents.CheckUserHasPermissionsEvent]);
-    // }
+    public static void ProcessPlanInputDataDetails(IExecutionPlanContract planContract)
+    {
+        if (!planContract.HasInputData) return;
+
+        if (planContract.InputDataType.GetInterfaces().All(i => i == typeof(IExecutionParametersContract)))
+        {
+            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionParametersContract)}");
+        }
+
+        planContract.InputDataKey = GenerateExecutionPlanParametersKey(planContract);
+        planContract.InputDataPropertiesDetailsForContextStore = planContract.InputDataType.GetProperties()
+            .Where(p => p.GetCustomAttributes<ExecutionContextStoreKeyAttribute>().Any())
+            .Select(p => new ExecutionPlanDataDetailsForContextStoreModel
+            {
+                ExecutionContextStoreKeyAttribute = p.GetCustomAttribute<ExecutionContextStoreKeyAttribute>()!,
+                InputDataPropertyDetails = p
+            })
+            .ToDictionary(kv => kv.ExecutionContextStoreKeyAttribute.Key);
+    }
+
+    public static void ProcessPlanOutputDataDetails(IExecutionPlanContract planContract)
+    {
+        if (!planContract.HasOutputData) return;
+
+        if (planContract.OutputDataType!.GetInterfaces().All(i => i == typeof(IExecutionResultContract)))
+        {
+            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionResultContract)}");
+        }
+
+        planContract.OutputDataKey = GenerateExecutionPlanResultKey(planContract);
+        planContract.OutputDataPropertiesDetailsForContextStore = planContract.OutputDataType!.GetProperties()
+            .Where(p => p.GetCustomAttributes<ExecutionContextStoreKeyAttribute>().Any())
+            .Select(p => new ExecutionPlanDataDetailsForContextStoreModel
+            {
+                ExecutionContextStoreKeyAttribute = p.GetCustomAttribute<ExecutionContextStoreKeyAttribute>()!,
+                InputDataPropertyDetails = p
+            })
+            .ToDictionary(kv => kv.ExecutionContextStoreKeyAttribute.Key);
+    }
+
+    public static string GenerateExecutionPlanRegistrationKey(CoreExecutionPlanContract planContract)
+    {
+        var randomSuffix = Guid.NewGuid().ToString().Split("-")[^5];
+        return $"{planContract.Label}@{planContract.ImplementationTypeId}#{randomSuffix}";
+    }
+
+    private static string GenerateExecutionPlanResultKey(IExecutionPlanContract plan) => $"{plan.RegistrationKey}.Result";
+
+    private static string GenerateExecutionPlanParametersKey(IExecutionPlanContract plan) => $"{plan.RegistrationKey}.Params";
 }

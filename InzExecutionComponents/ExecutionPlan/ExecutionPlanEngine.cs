@@ -47,6 +47,9 @@ internal class ExecutionPlanEngine(
 
     public void RegisterExecutionPlans(Assembly assembly, IServiceCollection services)
     {
+        var executionTimeRecorderKey = $"RegisterExecutionPlans() for {assembly.GetName().Name}";
+        ExecutionTimeRecorder.Start(executionTimeRecorderKey);
+        
         var executionPlanTypes = Scouters.ExecutionPlanTypes(assembly);
         foreach (var executionPlanType in executionPlanTypes)
         {
@@ -63,21 +66,26 @@ internal class ExecutionPlanEngine(
 
             if (!planContract.IsRegistered) continue;
 
-            planContract.RegistrationKey = GenerateExecutionPlanRegistrationKey(planContract);
-            if (planContract.HasInputData) planContract.InputDataKey = GenerateExecutionPlanParametersKey(planContract);
-            if (planContract.HasOutputData) planContract.OutputDataKey = GenerateExecutionPlanResultKey(planContract);
-
+            planContract.RegistrationKey = ExecutionPlanUtility.GenerateExecutionPlanRegistrationKey(planContract);
+            ExecutionPlanUtility.ProcessPlanInputDataDetails(planContract);
+            ExecutionPlanUtility.ProcessPlanOutputDataDetails(planContract);
             ExecutionPlanUtility.ProcessInterfaces(
                 planContract,
                 executionPlanType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
             );
+
             RegisteredExecutionPlanContracts.Add(planContract);
             services.AddKeyedSingleton(serviceType: executionPlanType, serviceKey: planContract.RegistrationKey, implementationType: executionPlanType);
         }
+
+        ExecutionTimeRecorder.EndThenPrint(executionTimeRecorderKey);
     }
 
     public async Task PerformExecution(IExecutionPlanContract plan, IExecutionParametersContract? parameters)
     {
+        var executionTimeRecorderKey = $"PerformExecution() for {plan.Label}";
+        ExecutionTimeRecorder.Start(executionTimeRecorderKey);
+
         var context = new CoreExecutionContext
         {
             ExecutionPlanLabel = plan.Label,
@@ -89,7 +97,11 @@ internal class ExecutionPlanEngine(
             Results = new ExecutionContextResultRepository(),
         };
 
-        if (plan.HasInputData && parameters is not null) context.Store.Set(context.ExecutionPlanInputDataKey, parameters);
+        if (plan.HasInputData && parameters is not null)
+        {
+            context.Store.Set(context.ExecutionPlanInputDataKey, parameters);
+            LoadInputValuesIntoExecutionContextStore(context, plan, parameters);
+        }
 
         CheckAndLoadRequiredConfigurationOptions(context, plan);
 
@@ -109,6 +121,28 @@ internal class ExecutionPlanEngine(
         if (CheckAndProcessFailures(context)) return;
 
         await CheckAndPublishSystemNotificationsOfExecutionPlan(context, plan);
+        
+        ExecutionTimeRecorder.EndThenPrint(executionTimeRecorderKey);
+    }
+
+    private void LoadInputValuesIntoExecutionContextStore(IExecutionContext context, IExecutionPlanContract plan, IExecutionParametersContract parameters)
+    {
+        if (plan.InputDataPropertiesDetailsForContextStore.Count == 0) return;
+
+        foreach (var (key, data) in plan.InputDataPropertiesDetailsForContextStore)
+        {
+            context.Store.Set(key, data.InputDataPropertyDetails.GetValue(parameters));
+        }
+    }
+
+    private void LoadOutputValuesIntoExecutionContextStore(IExecutionContext context, IExecutionPlanContract plan, IExecutionResultContract parameters)
+    {
+        if (plan.OutputDataPropertiesDetailsForContextStore.Count == 0) return;
+
+        foreach (var (key, data) in plan.OutputDataPropertiesDetailsForContextStore)
+        {
+            context.Store.Set(key, data.InputDataPropertyDetails.GetValue(parameters));
+        }
     }
 
     private async Task CheckAndPublishSystemNotificationsOfExecutionPlan(IExecutionContext context, IExecutionPlanContract plan)
@@ -143,13 +177,16 @@ internal class ExecutionPlanEngine(
         // TODO this could throw exception and they can be unhandled by users so catch exceptions and create a generic failure result
         var result = await instance.Execute(context);
 
-        if (result.IsSuccess)
+        if (result.IsError)
         {
-            (context.Results as ISystemExecutionContextResultRepository)!.Add(plan.RegistrationKey, result);
+            // TODO rethink why adding this failure into this context storage
+            context.Failures.Add(plan.RegistrationKey, result.Failure!);
             return;
         }
 
-        context.Failures.Add(plan.RegistrationKey, result.Failure!);
+        // TODO rethink why adding the result into this context storage
+        (context.Results as ISystemExecutionContextResultRepository)!.Add(plan.RegistrationKey, result);
+        if (plan.HasOutputData && result.Result is not null) LoadOutputValuesIntoExecutionContextStore(context, plan, result.Result);
     }
 
     private async Task CheckAndDispatchPreExecutionEvents(IExecutionContext context, IExecutionPlanContract plan)
@@ -196,14 +233,4 @@ internal class ExecutionPlanEngine(
         var plan = RegisteredExecutionPlanContracts.FirstOrDefault(p => p.Label.Equals(label));
         return plan ?? throw new InvalidOperationException($"Execution plan {label} was not found");
     }
-
-
-    private string GenerateExecutionPlanRegistrationKey(CoreExecutionPlanContract planContract)
-    {
-        var randomSuffix = Guid.NewGuid().ToString().Split("-")[^5];
-        return $"{planContract.Label}@{planContract.ImplementationTypeId}#{randomSuffix}";
-    }
-
-    private string? GenerateExecutionPlanResultKey(CoreExecutionPlanContract plan) => $"{plan.RegistrationKey}.Result";
-    private string GenerateExecutionPlanParametersKey(IExecutionPlanContract plan) => $"{plan.RegistrationKey}.Params";
 }

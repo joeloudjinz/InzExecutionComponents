@@ -1,3 +1,5 @@
+using InzExecutionComponents.ExecutionPlan;
+
 namespace InzExecutionComponents.Contracts.ExecutionPlan;
 
 public interface IExecutionPlanContract
@@ -12,9 +14,11 @@ public interface IExecutionPlanContract
     public bool ValidateInputData { get; set; }
     public Type InputDataType { get; set; }
     public Type? InputDataValidatorType { get; set; }
+    Dictionary<string, ExecutionPlanDataDetailsForContextStoreModel> InputDataPropertiesDetailsForContextStore { get; set; }
     public bool HasOutputData { get; set; }
     public string? OutputDataKey { get; set; }
     public Type? OutputDataType { get; set; }
+    Dictionary<string, ExecutionPlanDataDetailsForContextStoreModel> OutputDataPropertiesDetailsForContextStore { get; set; }
     public string MessagingQueueRequestKey { get; set; }
     public bool ShouldRunBeforeDispatchingPreExecutionEventsTask { get; set; }
     public bool ShouldRunExecutionTask { get; set; }
