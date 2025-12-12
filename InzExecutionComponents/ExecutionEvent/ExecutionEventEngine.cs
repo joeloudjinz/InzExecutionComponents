@@ -69,7 +69,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         return model.Name;
     }
 
-    public async Task DispatchEvents(IExecutionContext context, Queue<string[]> map)
+    public async Task DispatchEvents(IInternalExecutionContext context, Queue<string[]> map)
     {
         foreach (var events in map)
         {
@@ -79,7 +79,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         }
     }
 
-    public async Task DispatchEvents(IExecutionContext context, string[][] map)
+    public async Task DispatchEvents(IInternalExecutionContext context, string[][] map)
     {
         foreach (var events in map)
         {
@@ -89,7 +89,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         }
     }
 
-    private async Task ProcessEventTypeAndDispatchEvent(IExecutionContext context, string name)
+    private async Task ProcessEventTypeAndDispatchEvent(IInternalExecutionContext context, string name)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var contract)) throw new InvalidOperationException($"Execution event [{name}] was not found");
 
@@ -111,7 +111,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         // await CheckIfEventPublishesSystemNotificationAndPublish(context, name);
     }
 
-    // private Task CheckIfEventPublishesSystemNotificationAndPublish(IExecutionContext context, string name)
+    // private Task CheckIfEventPublishesSystemNotificationAndPublish(IInternalExecutionContext context, string name)
     // {
     //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{was name}] not found");
     //     return model.RequiredSystemNotifications.Length == 0
@@ -119,7 +119,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     //         : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
     // }
 
-    private void CheckIfEventRequiresContextMetadataResources(IExecutionContext context, string name, EventContract contract)
+    private void CheckIfEventRequiresContextMetadataResources(IInternalExecutionContext context, string name, EventContract contract)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
         if (model.RequiredMetadataKeys.Length == 0) return;
@@ -130,7 +130,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         throw new MissingContextKeyException(storageType: "metadata", key: results.missing, contract);
     }
 
-    private void CheckIfEventRequiresContextStoreResources(IExecutionContext context, string name, EventContract contract)
+    private void CheckIfEventRequiresContextStoreResources(IInternalExecutionContext context, string name, EventContract contract)
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
         if (model.RequiredStoreKeys.Length == 0) return;
@@ -141,7 +141,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         throw new MissingContextKeyException(storageType: "store", key: results.missing, contract);
     }
 
-    // private void CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(IExecutionContext context, string name)
+    // private void CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(IInternalExecutionContext context, string name)
     // {
     //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
     //     if (model.RequiredConfigurations.Length == 0) return;

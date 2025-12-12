@@ -8,7 +8,6 @@ public class ExecutionPlanAttribute : Attribute
     public ExecutionPlanAttribute(string name)
     {
         Name = name;
-        ExecutionPlanType = ExecutionPlanType.Feature;
     }
 
     public ExecutionPlanAttribute(string name, string group)
