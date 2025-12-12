@@ -52,6 +52,7 @@ public static class ExecutionPlanUtility
 
             if (attribute is ExecutionOutputDataTypeAttribute executionOutputDataTypeAttribute)
             {
+                contract.HasOutputData = true;
                 contract.OutputDataType = executionOutputDataTypeAttribute.Type;
                 continue;
             }
@@ -72,6 +73,7 @@ public static class ExecutionPlanUtility
     public static void ProcessInterfaces(IExecutionPlanContract planContract, ICollection<Type> interfaces)
     {
         planContract.ShouldRunBeforeDispatchingPreExecutionEventsTask = interfaces.Contains(typeof(IPreEventsExecutionContract));
+        // TODO Find a way to remove the use of generic result interface here so Execute() can be ran by the engine  
         planContract.ShouldRunExecutionTask = interfaces.Contains(typeof(IExecutionContract<IExecutionResultContract>));
         planContract.ShouldRunAfterDispatchingPostExecutionEventsTask = interfaces.Contains(typeof(IPostEventsExecutionContract));
     }
