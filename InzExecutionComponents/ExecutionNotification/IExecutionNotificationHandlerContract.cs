@@ -1,4 +1,4 @@
-namespace InzExecutionComponents.Engines;
+namespace InzExecutionComponents.ExecutionNotification;
 
 internal interface IExecutionNotificationHandlerContract
 {

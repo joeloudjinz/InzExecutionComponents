@@ -6,7 +6,7 @@ using InzExecutionComponents.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace InzExecutionComponents.Engines;
+namespace InzExecutionComponents.ExecutionNotification;
 
 internal class ExecutionNotificationEngine
 {
@@ -90,7 +90,7 @@ internal class ExecutionNotificationEngine
         return map;
     }
 
-    public async Task HandleNotifications(IExecutionContext context, string[] notifications)
+    public async Task HandleNotifications(IExecutionPlanContext context, string[] notifications)
     {
         var handlers = new List<IExecutionNotificationHandler>();
         foreach (var name in notifications)

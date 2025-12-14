@@ -4,5 +4,5 @@ namespace InzExecutionComponents.Contracts.Configuration;
 
 public interface IExecutionConfigurationOptions
 {
-    public void LoadIntoContextMetadata(IExecutionContext context);
+    public void LoadIntoContextMetadata(IExecutionPlanContext context);
 }

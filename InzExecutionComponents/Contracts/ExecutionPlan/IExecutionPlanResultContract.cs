@@ -1,6 +1,6 @@
 namespace InzExecutionComponents.Contracts.ExecutionPlan;
 
-public interface IExecutionResultContract
+public interface IExecutionPlanResultContract
 {
     // Placeholder interface
 }

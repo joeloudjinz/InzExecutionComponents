@@ -2,7 +2,7 @@ using InzExecutionComponents.ExecutionEvent;
 
 namespace InzExecutionComponents.Exception;
 
-public class ExecutionEventException : System.Exception
+internal class ExecutionEventException : System.Exception
 {
     public ExecutionEventException(string label, System.Exception e) : base($"Execution event [{label}] failed", e)
     {

@@ -6,10 +6,18 @@ using InzExecutionComponents.Enums;
 
 namespace InzExecutionComponents.ExecutionPlan;
 
-public static class ExecutionPlanUtility
+internal static class ExecutionPlanUtility
 {
-    public static void ProcessAttributes(IExecutionPlanContract contract, ICollection<object> attributes)
+    private static readonly List<Type> ProcessableExecutionInterfaces =
+    [
+        typeof(IPreEventsExecutionContract),
+        typeof(IExecutionContract<IExecutionPlanResultContract>),
+        typeof(IPostEventsExecutionContract)
+    ];
+
+    public static void ProcessAttributes(IExecutionPlanContract contract)
     {
+        var attributes = contract.ImplementationType.GetCustomAttributes().ToList();
         foreach (var attribute in attributes)
         {
             if (attribute is ExecutionPlanAttribute executor)
@@ -30,15 +38,6 @@ public static class ExecutionPlanUtility
                 continue;
             }
 
-            if (attribute is ExecutionInputDataTypeAttribute executionInputDataTypeAttribute)
-            {
-                contract.HasInputData = true;
-                contract.InputDataType = executionInputDataTypeAttribute.RequestDataType;
-                contract.ValidateInputData = executionInputDataTypeAttribute.ValidatorType is not null;
-                if (contract.ValidateInputData) contract.InputDataValidatorType = executionInputDataTypeAttribute.RequestDataType;
-                continue;
-            }
-
             if (attribute is ExecutionConfigurationOptionsAttribute executionConfigurationOptionsAttribute)
             {
                 contract.RequiredExecutionConfigurations = executionConfigurationOptionsAttribute.Labels;
@@ -51,10 +50,22 @@ public static class ExecutionPlanUtility
                 continue;
             }
 
-            if (attribute is ExecutionOutputDataTypeAttribute executionOutputDataTypeAttribute)
+            if (attribute is BaseExecutionPlanDataTypeAttribute baseExecutionPlanDataTypeAttribute)
             {
-                contract.HasOutputData = true;
-                contract.OutputDataType = executionOutputDataTypeAttribute.Type;
+                if (baseExecutionPlanDataTypeAttribute.IsInput)
+                {
+                    contract.HasInputData = true;
+                    contract.InputDataType = baseExecutionPlanDataTypeAttribute.Type;
+                    // TODO Support validation for input data
+                    contract.ValidateInputData = false;
+                    contract.InputDataValidatorType = null;
+                }
+                else
+                {
+                    contract.HasOutputData = true;
+                    contract.OutputDataType = baseExecutionPlanDataTypeAttribute.Type;
+                }
+
                 continue;
             }
 
@@ -71,11 +82,12 @@ public static class ExecutionPlanUtility
         }
     }
 
-    public static void ProcessInterfaces(IExecutionPlanContract planContract, ICollection<Type> interfaces)
+    public static void ProcessInterfaces(IExecutionPlanContract planContract)
     {
+        var interfaces = planContract.ImplementationType.GetInterfaces().Where(i => ProcessableExecutionInterfaces.Contains(i)).ToList();
         planContract.ShouldRunBeforeDispatchingPreExecutionEventsTask = interfaces.Contains(typeof(IPreEventsExecutionContract));
         // TODO Find a way to remove the use of generic result interface here so Execute() can be ran by the engine  
-        planContract.ShouldRunExecutionTask = interfaces.Contains(typeof(IExecutionContract<IExecutionResultContract>));
+        planContract.ShouldRunExecutionTask = interfaces.Contains(typeof(IExecutionContract<IExecutionPlanResultContract>));
         planContract.ShouldRunAfterDispatchingPostExecutionEventsTask = interfaces.Contains(typeof(IPostEventsExecutionContract));
     }
 
@@ -83,9 +95,9 @@ public static class ExecutionPlanUtility
     {
         if (!planContract.HasInputData) return;
 
-        if (planContract.InputDataType.GetInterfaces().All(i => i == typeof(IExecutionParametersContract)))
+        if (planContract.InputDataType.GetInterfaces().All(i => i == typeof(IExecutionPlanParametersContract)))
         {
-            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionParametersContract)}");
+            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionPlanParametersContract)}");
         }
 
         planContract.InputDataKey = GenerateExecutionPlanParametersKey(planContract);
@@ -103,9 +115,9 @@ public static class ExecutionPlanUtility
     {
         if (!planContract.HasOutputData) return;
 
-        if (planContract.OutputDataType!.GetInterfaces().All(i => i == typeof(IExecutionResultContract)))
+        if (planContract.OutputDataType!.GetInterfaces().All(i => i == typeof(IExecutionPlanResultContract)))
         {
-            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionResultContract)}");
+            throw new InvalidOperationException($"Execution plan [{planContract.Label}] input data type does not implement {nameof(IExecutionPlanResultContract)}");
         }
 
         planContract.OutputDataKey = GenerateExecutionPlanResultKey(planContract);
@@ -119,7 +131,7 @@ public static class ExecutionPlanUtility
             .ToDictionary(kv => kv.ExecutionContextStoreKeyAttribute.Key);
     }
 
-    public static string GenerateExecutionPlanRegistrationKey(CoreExecutionPlanContract planContract)
+    public static string GenerateExecutionPlanRegistrationKey(ExecutionPlanContract planContract)
     {
         var randomSuffix = Guid.NewGuid().ToString().Split("-")[^5];
         return $"{planContract.Label}@{planContract.ImplementationTypeId}#{randomSuffix}";

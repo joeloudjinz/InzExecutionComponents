@@ -12,7 +12,7 @@ namespace Demo.FinancialTradingSystem.Events;
 )]
 public class LiquidityAssessmentEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionContext context)
+    public Task PerformEventTask(IExecutionPlanContext context)
     {
         var marketData = context.Store.Get<MarketData>(ContextStoreKeys.MarketData);
 

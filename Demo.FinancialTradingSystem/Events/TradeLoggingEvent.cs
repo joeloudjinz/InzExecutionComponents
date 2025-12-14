@@ -9,7 +9,7 @@ namespace Demo.FinancialTradingSystem.Events;
 [ServiceExecutionEvent(ExecutionEventKeys.TradeLogging, requiredStoreKeys: [ContextStoreKeys.TradeResults])]
 public class TradeLoggingEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionContext context)
+    public Task PerformEventTask(IExecutionPlanContext context)
     {
         var tradeResults = context.Store.Get<TradeExecutionResult[]>(ContextStoreKeys.TradeResults);
         

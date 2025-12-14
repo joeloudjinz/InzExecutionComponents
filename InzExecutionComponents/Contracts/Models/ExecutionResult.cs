@@ -2,7 +2,7 @@ using InzExecutionComponents.Contracts.ExecutionPlan;
 
 namespace InzExecutionComponents.Contracts.Models;
 
-public class ExecutionResult<TValue> where TValue : IExecutionResultContract
+public class ExecutionResult<TValue> where TValue : IExecutionPlanResultContract
 {
     private readonly TValue? _value;
     private readonly ExecutionFailure? _error;

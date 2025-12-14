@@ -5,5 +5,5 @@ namespace InzExecutionComponents.Contracts.ExecutionEvent;
 
 public interface IPostEventsExecutionContract : IExecutionRegistryContract
 {
-    public Task AfterDispatchingPostExecutionEvents(IExecutionContext context);
+    public Task AfterDispatchingPostExecutionEvents(IExecutionPlanContext context);
 }

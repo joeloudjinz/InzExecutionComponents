@@ -2,7 +2,7 @@ using InzExecutionComponents.ExecutionPlan;
 
 namespace InzExecutionComponents.Contracts.ExecutionPlan;
 
-public class CoreExecutionPlanContract : IExecutionPlanContract
+internal class ExecutionPlanContract : IExecutionPlanContract
 {
     public string RegistrationKey { get; set; } = string.Empty;
     public Type ImplementationType { get; set; } = null!;

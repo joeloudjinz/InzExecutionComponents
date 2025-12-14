@@ -12,7 +12,7 @@ namespace Demo.FinancialTradingSystem.Events;
 )]
 public class PerformanceMetricsUpdateEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionContext context)
+    public Task PerformEventTask(IExecutionPlanContext context)
     {
         var executionMetrics = context.Store.Get<RiskMetrics>(ContextStoreKeys.RiskMetrics);
 

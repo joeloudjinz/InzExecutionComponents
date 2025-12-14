@@ -4,7 +4,7 @@ using InzExecutionComponents.Contracts.Configuration;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using Microsoft.Extensions.Configuration;
 
-namespace InzExecutionComponents.Engines;
+namespace InzExecutionComponents.ExecutionConfiguration;
 
 internal class ExecutionConfigurationEngine
 {
@@ -34,7 +34,7 @@ internal class ExecutionConfigurationEngine
         }
     }
 
-    public void LoadConfigurationOptionsIntoContext(IExecutionContext context, string[] labels)
+    public void LoadConfigurationOptionsIntoContext(IExecutionPlanContext context, string[] labels)
     {
         foreach (var label in labels)
         {

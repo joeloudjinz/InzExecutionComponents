@@ -3,7 +3,7 @@ using InzExecutionComponents.Attributes;
 
 namespace InzExecutionComponents.ExecutionPlan;
 
-public record ExecutionPlanDataDetailsForContextStoreModel
+internal record ExecutionPlanDataDetailsForContextStoreModel
 {
     public ExecutionContextStoreKeyAttribute ExecutionContextStoreKeyAttribute { get; set; } = null!;
     public PropertyInfo InputDataPropertyDetails { get; set; } = null!;

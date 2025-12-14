@@ -8,7 +8,7 @@ namespace Demo.FinancialTradingSystem.ExecutionNotifications.Handlers;
 [ExecutionNotificationHandler(ExecutionNotificationKeys.TradeExecution, ExecutionNotificationHandlerKeys.TradeExecution.MonitoringDashboard)]
 public class TradeExecutionMonitoringDashboardHandler : IExecutionNotificationHandler
 {
-    public async Task Handle(IExecutionContext context)
+    public async Task Handle(IExecutionPlanContext context)
     {
         // Get notification data from context if available
         // In a real implementation, the notification would be passed to the handler
@@ -25,7 +25,7 @@ public class TradeExecutionMonitoringDashboardHandler : IExecutionNotificationHa
 [ExecutionNotificationHandler(ExecutionNotificationKeys.TradeExecution, ExecutionNotificationHandlerKeys.TradeExecution.ComplianceTeam)]
 public class TradeExecutionComplianceTeamHandler : IExecutionNotificationHandler
 {
-    public async Task Handle(IExecutionContext context)
+    public async Task Handle(IExecutionPlanContext context)
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {GetType().Name} - Sending trade execution notification to compliance team");
         
@@ -39,7 +39,7 @@ public class TradeExecutionComplianceTeamHandler : IExecutionNotificationHandler
 [ExecutionNotificationHandler(ExecutionNotificationKeys.RiskAlert, ExecutionNotificationHandlerKeys.RiskAlert.RiskManager)]
 public class RiskAlertRiskManagerHandler : IExecutionNotificationHandler
 {
-    public async Task Handle(IExecutionContext context)
+    public async Task Handle(IExecutionPlanContext context)
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {GetType().Name} - Sending risk alert to risk manager");
         
@@ -53,7 +53,7 @@ public class RiskAlertRiskManagerHandler : IExecutionNotificationHandler
 [ExecutionNotificationHandler(ExecutionNotificationKeys.RiskAlert, ExecutionNotificationHandlerKeys.RiskAlert.SystemAdministrator)]
 public class RiskAlertSystemAdministratorHandler : IExecutionNotificationHandler
 {
-    public async Task Handle(IExecutionContext context)
+    public async Task Handle(IExecutionPlanContext context)
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {GetType().Name} - Sending risk alert to system administrator");
         

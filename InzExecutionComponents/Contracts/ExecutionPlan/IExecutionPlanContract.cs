@@ -2,7 +2,7 @@ using InzExecutionComponents.ExecutionPlan;
 
 namespace InzExecutionComponents.Contracts.ExecutionPlan;
 
-public interface IExecutionPlanContract
+internal interface IExecutionPlanContract
 {
     public string RegistrationKey { get; set; }
     public Type ImplementationType { get; set; }

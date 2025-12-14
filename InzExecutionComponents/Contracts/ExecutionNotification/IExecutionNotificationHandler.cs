@@ -4,5 +4,5 @@ namespace InzExecutionComponents.Contracts.ExecutionNotification;
 
 public interface IExecutionNotificationHandler
 {
-    public Task Handle(IExecutionContext context);
+    public Task Handle(IExecutionPlanContext context);
 }

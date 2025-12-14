@@ -1,6 +1,6 @@
 namespace InzExecutionComponents.Enums;
 
-public enum RequestDataPropertiesCasing
+internal enum RequestDataPropertiesCasing
 {
     CamelCase,
     SnakeCase,

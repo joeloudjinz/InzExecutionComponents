@@ -4,5 +4,5 @@ namespace InzExecutionComponents.Contracts.ExecutionEvent;
 
 public interface IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionContext context);
+    public Task PerformEventTask(IExecutionPlanContext context);
 }

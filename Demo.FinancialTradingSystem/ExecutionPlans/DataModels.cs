@@ -4,7 +4,7 @@ using InzExecutionComponents.Contracts.ExecutionPlan;
 
 namespace Demo.FinancialTradingSystem.ExecutionPlans;
 
-public record TradingInputData : IExecutionParametersContract
+public record TradingInputData : IExecutionPlanParametersContract
 {
     [ExecutionContextStoreKey(ContextStoreKeys.MarketData)]
     public MarketData MarketData { get; set; } = new();
@@ -20,7 +20,7 @@ public record TradingInputData : IExecutionParametersContract
     public string Market { get; set; } = string.Empty;
 }
 
-public record TradingOutputData : IExecutionResultContract
+public record TradingOutputData : IExecutionPlanResultContract
 {
     [ExecutionContextStoreKey(ContextStoreKeys.TradeResults)]
     public TradeExecutionResult[] TradeResults { get; set; } = [];

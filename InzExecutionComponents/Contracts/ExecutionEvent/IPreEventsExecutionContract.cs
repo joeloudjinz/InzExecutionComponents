@@ -5,5 +5,5 @@ namespace InzExecutionComponents.Contracts.ExecutionEvent;
 
 public interface IPreEventsExecutionContract : IExecutionRegistryContract
 {
-    public Task BeforeDispatchingPreExecutionEvents(IExecutionContext context);
+    public Task BeforeDispatchingPreExecutionEvents(IExecutionPlanContext context);
 }

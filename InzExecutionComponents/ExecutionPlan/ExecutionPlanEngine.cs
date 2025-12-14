@@ -1,11 +1,11 @@
 using System.Reflection;
-using InzExecutionComponents.Attributes;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
-using InzExecutionComponents.Engines;
+using InzExecutionComponents.ExecutionConfiguration;
 using InzExecutionComponents.ExecutionContext;
 using InzExecutionComponents.ExecutionEvent;
+using InzExecutionComponents.ExecutionNotification;
 using InzExecutionComponents.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,25 +17,6 @@ internal class ExecutionPlanEngine(
     ExecutionConfigurationEngine executionConfigurationEngine
 )
 {
-    private readonly List<Type> _processableAttributes =
-    [
-        typeof(MessagingQueueLabelAttribute),
-        typeof(ExecutionInputDataTypeAttribute),
-        typeof(ExecutionOutputDataTypeAttribute),
-        typeof(ExecutionConfigurationOptionsAttribute),
-        typeof(PublishExecutionNotificationsAttribute),
-        typeof(ExecutionPlanAttribute),
-        typeof(RegisterPreExecutionEvents),
-        typeof(RegisterPostExecutionEvents)
-    ];
-
-    private readonly List<Type> _processableExecutionInterfaces =
-    [
-        typeof(IPreEventsExecutionContract),
-        typeof(IExecutionContract<IExecutionResultContract>),
-        typeof(IPostEventsExecutionContract)
-    ];
-
     private readonly List<IExecutionPlanContract> _registeredExecutionPlanContracts = [];
 
     public IServiceProvider ServiceProvider { get; set; } = null!;
@@ -53,26 +34,19 @@ internal class ExecutionPlanEngine(
         var executionPlanTypes = Scouters.ExecutionPlanTypes(assembly);
         foreach (var executionPlanType in executionPlanTypes)
         {
-            var planContract = new CoreExecutionPlanContract
+            var planContract = new ExecutionPlanContract
             {
                 ImplementationType = executionPlanType,
                 ImplementationTypeId = executionPlanType.Name
             };
 
-            ExecutionPlanUtility.ProcessAttributes(
-                planContract,
-                executionPlanType.GetCustomAttributes(false).Where(a => _processableAttributes.Contains(a.GetType())).ToList()
-            );
-
+            ExecutionPlanUtility.ProcessAttributes(planContract);
             if (!planContract.IsRegistered) continue;
 
             planContract.RegistrationKey = ExecutionPlanUtility.GenerateExecutionPlanRegistrationKey(planContract);
             ExecutionPlanUtility.ProcessPlanInputDataDetails(planContract);
             ExecutionPlanUtility.ProcessPlanOutputDataDetails(planContract);
-            ExecutionPlanUtility.ProcessInterfaces(
-                planContract,
-                executionPlanType.GetInterfaces().Where(i => _processableExecutionInterfaces.Contains(i)).ToList()
-            );
+            ExecutionPlanUtility.ProcessInterfaces(planContract);
 
             _registeredExecutionPlanContracts.Add(planContract);
             services.AddKeyedSingleton(serviceType: executionPlanType, serviceKey: planContract.RegistrationKey, implementationType: executionPlanType);
@@ -81,25 +55,16 @@ internal class ExecutionPlanEngine(
         ExecutionTimeRecorder.EndThenPrint(executionTimeRecorderKey);
     }
 
-    public async Task PerformExecution(IExecutionPlanContract plan, IExecutionParametersContract? parameters)
+    public async Task PerformExecution(IExecutionPlanContract plan, IExecutionPlanParametersContract? parameters)
     {
         var executionTimeRecorderKey = $"PerformExecution() for {plan.Label}";
         ExecutionTimeRecorder.Start(executionTimeRecorderKey);
 
-        var context = new ExecutionContext.ExecutionContext
-        {
-            ExecutionPlanLabel = plan.Label,
-            ExecutionPlanRegistrationKey = plan.RegistrationKey,
-            ExecutionPlanInputDataKey = plan.InputDataKey,
-            ExecutionPlanOutputDataKey = plan.OutputDataKey,
-            MetaData = new ExecutionContextDataStore(),
-            Store = new ExecutionContextDataStore(),
-            Failures = new ExecutionContextFailureRepository()
-        };
+        var context = new ExecutionPlanContext(this, plan, parameters);
 
         if (plan.HasInputData && parameters is not null)
         {
-            context.Store.Set(context.ExecutionPlanInputDataKey, parameters);
+            context.SetInputData(parameters);
             LoadInputValuesIntoExecutionContextStore(context, plan, parameters);
         }
 
@@ -125,7 +90,7 @@ internal class ExecutionPlanEngine(
         ExecutionTimeRecorder.EndThenPrint(executionTimeRecorderKey);
     }
 
-    private void LoadInputValuesIntoExecutionContextStore(IInternalExecutionContext context, IExecutionPlanContract plan, IExecutionParametersContract parameters)
+    private void LoadInputValuesIntoExecutionContextStore(IInternalExecutionContext context, IExecutionPlanContract plan, IExecutionPlanParametersContract parameters)
     {
         if (plan.InputDataPropertiesDetailsForContextStore.Count == 0) return;
 
@@ -135,7 +100,7 @@ internal class ExecutionPlanEngine(
         }
     }
 
-    private void LoadOutputValuesIntoExecutionContextStore(IInternalExecutionContext context, IExecutionPlanContract plan, IExecutionResultContract parameters)
+    private void LoadOutputValuesIntoExecutionContextStore(IInternalExecutionContext context, IExecutionPlanContract plan, IExecutionPlanResultContract parameters)
     {
         if (plan.OutputDataPropertiesDetailsForContextStore.Count == 0) return;
 
@@ -171,7 +136,7 @@ internal class ExecutionPlanEngine(
     {
         if (!plan.ShouldRunExecutionTask) return;
 
-        var instance = GetExecutionPlanFromDependencyContainer<IExecutionContract<IExecutionResultContract>>(plan);
+        var instance = GetExecutionPlanFromDependencyContainer<IExecutionContract<IExecutionPlanResultContract>>(plan);
         if (instance is null) throw new NullReferenceException($"The execution plan {plan.RegistrationKey} instance is null."); // TODO improve this error message
 
         // TODO this could throw exception and they can be unhandled by users so catch exceptions and create a generic failure result
@@ -184,7 +149,11 @@ internal class ExecutionPlanEngine(
             return;
         }
 
-        if (plan.HasOutputData && result.Result is not null) LoadOutputValuesIntoExecutionContextStore(context, plan, result.Result);
+        if (plan.HasOutputData && result.Result is not null)
+        {
+            context.SetOutputData(result.Result);
+            LoadOutputValuesIntoExecutionContextStore(context, plan, result.Result);
+        }
     }
 
     private async Task CheckAndDispatchPreExecutionEvents(IInternalExecutionContext context, IExecutionPlanContract plan)

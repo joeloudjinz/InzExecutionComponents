@@ -4,24 +4,23 @@ using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
 using InzExecutionComponents.Contracts.Models;
-using InzExecutionComponents.Extensions;
 
 namespace Demo.FinancialTradingSystem.ExecutionPlans;
 
 [ExecutionPlan(ExecutionPlanKeys.FinancialTradingAlgo)]
-[ExecutionInputDataType(typeof(TradingInputData))]
-[ExecutionOutputDataType(typeof(TradingOutputData))]
+[ExecutionInputDataType<TradingInputData>]
+[ExecutionOutputDataType<TradingOutputData>]
 // [ExecutionConfigurationOptions([ConfigurationLabels.TradingRiskLimits])]
 [RegisterPreExecutionEvents(ExecutionEventKeys.MarketDataValidation)]
 [RegisterPreExecutionEvents(ExecutionEventKeys.LiquidityAssessment, ExecutionEventKeys.RegulatoryCompliance, ExecutionEventKeys.PositionOverlapCheck)]
 [RegisterPostExecutionEvents(ExecutionEventKeys.TradeLogging, ExecutionEventKeys.PerformanceMetricsUpdate)]
 [PublishExecutionNotifications([ExecutionNotificationKeys.TradeExecution, ExecutionNotificationKeys.RiskAlert])]
 public class AlgorithmicTradingExecutionPlan :
-    IExecutionContract<IExecutionResultContract>,
+    IExecutionContract<IExecutionPlanResultContract>,
     IPreEventsExecutionContract,
     IPostEventsExecutionContract
 {
-    public Task BeforeDispatchingPreExecutionEvents(IExecutionContext context)
+    public Task BeforeDispatchingPreExecutionEvents(IExecutionPlanContext context)
     {
         var marketData = context.Store.Get<MarketData>(ContextStoreKeys.MarketData);
 
@@ -32,7 +31,7 @@ public class AlgorithmicTradingExecutionPlan :
         // await Task.Delay(100); // Simulate initialization delay
     }
 
-    public Task<ExecutionResult<IExecutionResultContract>> Execute(IExecutionContext context)
+    public Task<ExecutionResult<IExecutionPlanResultContract>> Execute(IExecutionPlanContext context)
     {
         var inputData = context.GetInputData<TradingInputData>();
 
@@ -50,18 +49,15 @@ public class AlgorithmicTradingExecutionPlan :
             Message = "Trade execution completed successfully"
         };
 
-        // Add results to context for post-execution events
-        context.SetOutputData(outputData);
-
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {GetType().Name} - Trading execution completed. Trades executed: {tradeResults.Length}");
 
         // Add a small delay to make the method truly async
         // await Task.Delay(10);
 
-        return Task.FromResult<ExecutionResult<IExecutionResultContract>>(outputData);
+        return Task.FromResult<ExecutionResult<IExecutionPlanResultContract>>(outputData);
     }
 
-    public Task AfterDispatchingPostExecutionEvents(IExecutionContext context)
+    public Task AfterDispatchingPostExecutionEvents(IExecutionPlanContext context)
     {
         var outputData = context.GetOutputData<TradingOutputData>();
 
