@@ -1,36 +1,19 @@
 using InzExecutionComponents.Contracts;
 using InzExecutionComponents.Contracts.ExecutionPlan;
 using InzExecutionComponents.Exception;
-using InzExecutionComponents.ExecutionEvent;
 using InzExecutionComponents.ExecutionPlan;
 
 namespace InzExecutionComponents;
 
-internal class ExecutionComponentManager : IExecutionComponentManager
+internal class ExecutionComponentManager(ExecutionPlanEngine executionPlanEngine) : IExecutionComponentManager
 {
-    private readonly ExecutionPlanEngine _executionPlanEngine;
-    private readonly ExecutionEventEngine _executionEventEngine;
-    private readonly IServiceProvider _serviceProvider;
-
-    public ExecutionComponentManager(
-        IServiceProvider serviceProvider,
-        ExecutionPlanEngine executionPlanEngine,
-        ExecutionEventEngine executionEventEngine
-    )
-    {
-        _serviceProvider = serviceProvider;
-        _executionPlanEngine = executionPlanEngine;
-        _executionEventEngine = executionEventEngine;
-        _executionPlanEngine.ServiceProvider = serviceProvider;
-    }
-
     public async Task LaunchExecution(string label, IExecutionPlanParametersContract parameters)
     {
-        var plan = _executionPlanEngine.GetExecutionPlan(label);
+        var plan = executionPlanEngine.GetExecutionPlan(label);
 
         try
         {
-            await _executionPlanEngine.PerformExecution(plan, parameters);
+            await executionPlanEngine.PerformExecution(plan, parameters);
         }
         catch (System.Exception e)
         {
@@ -40,11 +23,11 @@ internal class ExecutionComponentManager : IExecutionComponentManager
 
     public async Task LaunchExecution(string label)
     {
-        var plan = _executionPlanEngine.GetExecutionPlan(label);
+        var plan = executionPlanEngine.GetExecutionPlan(label);
 
         try
         {
-            await _executionPlanEngine.PerformExecution(plan, null);
+            await executionPlanEngine.PerformExecution(plan, null);
         }
         catch (System.Exception e)
         {

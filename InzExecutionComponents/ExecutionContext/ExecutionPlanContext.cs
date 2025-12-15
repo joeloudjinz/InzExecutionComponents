@@ -12,10 +12,6 @@ internal sealed class ExecutionPlanContext(
     IExecutionPlanParametersContract? executionParametersContract
 ) : IInternalExecutionContext
 {
-    // private readonly ExecutionPlanEngine _executionPlanEngine = executionPlanEngine;
-    // private readonly IExecutionPlanContract _executionPlanContract = executionPlanContract;
-    // private readonly IExecutionParametersContract? _executionParametersContract = executionParametersContract;
-
     public string ExecutionPlanRegistrationKey { get; } = executionPlanContract.RegistrationKey;
     public IExecutionContextDataRepository MetaData { get; } = new ExecutionContextDataStore();
     public IExecutionContextDataRepository Store { get; } = new ExecutionContextDataStore();
