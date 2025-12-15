@@ -9,7 +9,7 @@ namespace Demo.FinancialTradingSystem.Events;
 [ServiceExecutionEvent(ExecutionEventKeys.PositionOverlapCheck, requiredStoreKeys: [ContextStoreKeys.CurrentPositions, ContextStoreKeys.NewTrade])]
 public class PositionOverlapCheckEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionPlanContext context)
+    public Task Perform(IExecutionEventContext context)
     {
         var currentPositions = context.Store.Get<PortfolioPosition[]>(ContextStoreKeys.CurrentPositions);
         var newTrade = context.Store.Get<TradingSignal>(ContextStoreKeys.NewTrade);

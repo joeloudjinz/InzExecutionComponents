@@ -1,0 +1,16 @@
+using Demo.DummyApp.Resources;
+using InzExecutionComponents.Attributes;
+using InzExecutionComponents.Contracts.ExecutionContext;
+using InzExecutionComponents.Contracts.ExecutionNotification;
+
+namespace Demo.DummyApp.ExecutionNotifications.Handlers;
+
+[ExecutionNotificationHandler(ExecutionNotificationKeys.TestEvents, ExecutionNotificationHandlerKeys.Test.Test1)]
+public class TestEventsExecutionNotificationOneHandler : IExecutionNotificationHandler
+{
+    public async Task Handle(IExecutionPlanContext context)
+    {
+        await Task.Delay(1500);
+        Console.WriteLine($"{GetType().Name} executed");
+    }
+}

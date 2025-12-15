@@ -15,7 +15,7 @@ namespace Demo.FinancialTradingSystem.Events;
 )]
 public class MarketDataValidationEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionPlanContext context)
+    public Task Perform(IExecutionEventContext context)
     {
         var marketData = context.Store.Get<MarketData>(ContextStoreKeys.MarketData);
 

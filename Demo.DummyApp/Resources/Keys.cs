@@ -16,6 +16,7 @@ public static class ExecutionEventKeys
 public static class ExecutionNotificationKeys
 {
     public const string Test = "inz.notification.test";
+    public const string TestEvents = "inz.notification.test-for-events";
 }
 
 public static class ExecutionNotificationHandlerKeys

@@ -5,8 +5,8 @@ namespace InzExecutionComponents.Exception;
 
 internal class MissingContextKeyException : System.Exception
 {
-    public MissingContextKeyException(string storageType, string key, EventContract contract) : base(
-        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution event [{contract.Name}] with implementation type [{contract.InstanceType.FullName ?? contract.InstanceType.Name}]"
+    public MissingContextKeyException(string storageType, string key, IExecutionEventContract contract) : base(
+        $"Required context {storageType} key [{key}] is missing in the context {storageType} for execution event [{contract.Name}] with implementation type [{contract.ImplementationType.FullName ?? contract.ImplementationType.Name}]"
     )
     {
     }

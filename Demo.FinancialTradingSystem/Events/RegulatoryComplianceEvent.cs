@@ -8,7 +8,7 @@ namespace Demo.FinancialTradingSystem.Events;
 [ServiceExecutionEvent(ExecutionEventKeys.RegulatoryCompliance)]
 public class RegulatoryComplianceEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionPlanContext context)
+    public Task Perform(IExecutionEventContext context)
     {
         Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {GetType().Name} - Performing regulatory compliance check");
         
@@ -27,7 +27,7 @@ public class RegulatoryComplianceEvent : IExecutionEvent
         return Task.CompletedTask;
     }
 
-    private bool CheckCompliance(IExecutionPlanContext context)
+    private bool CheckCompliance(IExecutionEventContext context)
     {
         // This is a simplified compliance check
         // In a real system, this would validate against multiple regulatory rules

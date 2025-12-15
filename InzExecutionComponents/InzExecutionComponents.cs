@@ -29,10 +29,7 @@ public static class InzExecutionComponents
         foreach (var assembly in assemblies)
         {
             executionPlanEngine.RegisterExecutionPlans(assembly, services);
-
-            Scouters.ExecutionEvents(assembly, services);
-            executionEventEngine.RegisterEvents(Scouters.ExecutionEventTypes(assembly));
-
+            executionEventEngine.RegisterExecutionEvents(assembly, services);
             executionNotificationEngine.RegisterExecutionNotificationAndHandlers(assembly, services);
 
             // TODO enable execution configuration feature

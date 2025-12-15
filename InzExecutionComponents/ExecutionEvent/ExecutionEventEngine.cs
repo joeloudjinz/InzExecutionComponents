@@ -1,23 +1,17 @@
-using InzExecutionComponents.Attributes;
+using System.Reflection;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Exception;
 using InzExecutionComponents.ExecutionConfiguration;
 using InzExecutionComponents.ExecutionNotification;
+using InzExecutionComponents.Utilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace InzExecutionComponents.ExecutionEvent;
 
 internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEngine, ExecutionNotificationEngine executionNotificationEngine)
 {
     private IServiceProvider ServiceProvider { get; set; } = null!;
-
-    private static readonly Type[] ProcessableAttributes =
-    [
-        typeof(BaseExecutionEventAttribute),
-        typeof(ExecutionEventAttribute),
-        typeof(PublishExecutionNotificationsAttribute),
-        typeof(ServiceExecutionEventAttribute)
-    ];
 
     private readonly Dictionary<string, EventContract> _registeredEventsContracts = new();
 
@@ -26,48 +20,24 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         ServiceProvider = services;
     }
 
-    public void RegisterEvents(ICollection<Type> events)
+    public void RegisterExecutionEvents(Assembly assembly, IServiceCollection services)
     {
-        foreach (var type in events)
-        {
-            var attributes = type.GetCustomAttributes(true).Where(a => ProcessableAttributes.Contains(a.GetType())).ToList();
-            var eventName = BuildAndRegisterEventContract(type, attributes);
-            ProcessEventAttributesAndUpdateEventContract(eventName, attributes);
-        }
-    }
+        var executionTimeRecorderKey = $"RegisterExecutionEvents() for {assembly.GetName().Name}";
+        ExecutionTimeRecorder.Start(executionTimeRecorderKey);
 
-    private void ProcessEventAttributesAndUpdateEventContract(string eventName, List<object> attributes)
-    {
-        foreach (var attribute in attributes)
+        var types = Scouters.ExecutionEventTypes(assembly);
+        foreach (var type in types)
         {
-            if (attribute is not PublishExecutionNotificationsAttribute systemNotifications) continue;
-            if (systemNotifications.Notifications.Length == 0) continue;
-            _registeredEventsContracts[eventName].RequiredSystemNotifications = systemNotifications.Notifications;
-            // Register more data for the event by processing other attribute here ...
-        }
-    }
+            var contract = new EventContract { ImplementationType = type };
 
-    private string BuildAndRegisterEventContract(Type eventType, List<object> attributes)
-    {
-        if (attributes.FirstOrDefault(a => a is BaseExecutionEventAttribute) is not BaseExecutionEventAttribute executionEventData)
-        {
-            throw new System.Exception("Null object of [BaseExecutionEventAttribute] attribute!");
+            ExecutionEventUtility.ProcessAttributes(contract);
+            contract.RegistrationKey = ExecutionEventUtility.GenerateRegistrationKey(contract);
+
+            _registeredEventsContracts.Add(contract.Name, contract);
+            services.AddKeyedSingleton(serviceType: contract.ImplementationType, serviceKey: contract.RegistrationKey, implementationType: contract.ImplementationType);
         }
 
-        var model = new EventContract
-        {
-            InstanceType = eventType,
-            Name = executionEventData.Name,
-            Type = executionEventData.EventType,
-            RequiredMetadataKeys = executionEventData.RequiredMetadataKeys,
-            RequiredConfigurations = executionEventData.RequiredConfigurations,
-            RequiredStoreKeys = executionEventData.RequiredStoreKeys,
-            InputType = executionEventData.InputType,
-            OutputType = executionEventData.OutputType
-        };
-
-        _registeredEventsContracts.Add(executionEventData.Name, model);
-        return model.Name;
+        ExecutionTimeRecorder.EndThenPrint(executionTimeRecorderKey);
     }
 
     public async Task DispatchEvents(IInternalExecutionContext context, Queue<string[]> map)
@@ -80,6 +50,7 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
         }
     }
 
+    // TODO improve the logic of this method
     public async Task DispatchEvents(IInternalExecutionContext context, string[][] map)
     {
         foreach (var events in map)
@@ -94,58 +65,70 @@ internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEn
     {
         if (!_registeredEventsContracts.TryGetValue(name, out var contract)) throw new InvalidOperationException($"Execution event [{name}] was not found");
 
-        CheckIfEventRequiresContextMetadataResources(context, name, contract);
-        CheckIfEventRequiresContextStoreResources(context, name, contract);
+        CheckIfEventRequiresContextMetadataResources(context, contract);
+        CheckIfEventRequiresContextStoreResources(context, contract);
         // CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(context, name);
 
-        var instance = EventEngineUtilities.GetExecutionEventInstanceAndCastToEventInterface<IExecutionEvent>(ServiceProvider, contract);
+        var instance = GetExecutionEventFromDependencyContainer<IExecutionEvent>(contract);
+        if (instance is null)
+        {
+            // TODO improve this error message
+            throw new NullReferenceException($"Execution event with registration key [{contract.RegistrationKey}] was not found in the dependency injection container.");
+        }
+
         try
         {
-            await instance.PerformEventTask(context);
+            await instance.Perform(context);
         }
         catch (System.Exception e)
         {
             throw new ExecutionEventException(name, contract, e);
         }
 
-        // TODO enable execution notification feature
-        // await CheckIfEventPublishesSystemNotificationAndPublish(context, name);
+        await CheckIfEventPublishesSystemNotificationAndPublish(context, contract);
     }
 
-    // private Task CheckIfEventPublishesSystemNotificationAndPublish(IInternalExecutionContext context, string name)
-    // {
-    //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{was name}] not found");
-    //     return model.RequiredSystemNotifications.Length == 0
-    //         ? Task.CompletedTask
-    //         : executionNotificationEngine.HandleNotifications(context, model.RequiredSystemNotifications);
-    // }
-
-    private void CheckIfEventRequiresContextMetadataResources(IInternalExecutionContext context, string name, EventContract contract)
+    private void CheckIfEventRequiresContextMetadataResources(IInternalExecutionContext context, IExecutionEventContract contract)
     {
-        if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
-        if (model.RequiredMetadataKeys.Length == 0) return;
+        if (contract.RequiredMetadataKeys.Length == 0) return;
 
-        var results = context.MetaData.Check(model.RequiredMetadataKeys);
+        var results = context.MetaData.Check(contract.RequiredMetadataKeys);
         if (results.success) return;
 
         throw new MissingContextKeyException(storageType: "metadata", key: results.missing, contract);
     }
 
-    private void CheckIfEventRequiresContextStoreResources(IInternalExecutionContext context, string name, EventContract contract)
+    private void CheckIfEventRequiresContextStoreResources(IInternalExecutionContext context, IExecutionEventContract contract)
     {
-        if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
-        if (model.RequiredStoreKeys.Length == 0) return;
+        if (contract.RequiredStoreKeys.Length == 0) return;
 
-        var results = context.Store.Check(model.RequiredStoreKeys);
+        var results = context.Store.Check(contract.RequiredStoreKeys);
         if (results.success) return;
 
         throw new MissingContextKeyException(storageType: "store", key: results.missing, contract);
     }
 
+    private Task CheckIfEventPublishesSystemNotificationAndPublish(IInternalExecutionContext context, EventContract contract)
+    {
+        if (contract.RequiredSystemNotifications.Length == 0) return Task.CompletedTask;
+        return executionNotificationEngine.HandleNotifications(context, contract.RequiredSystemNotifications);
+    }
+
     // private void CheckIfEventRequiresConfigurationsAndLoadConfigurationsIntoContext(IInternalExecutionContext context, string name)
     // {
-    //     if (!_registeredEventsContracts.TryGetValue(name, out var model)) throw new InvalidOperationException($"Execution event [{name}] was not found");
     //     if (model.RequiredConfigurations.Length == 0) return;
     //     configurationEngine.LoadConfigurationOptionsIntoContext(context, model.RequiredConfigurations);
     // }
+
+    private T? GetExecutionEventFromDependencyContainer<T>(IExecutionEventContract e)
+    {
+        try
+        {
+            return (T)ServiceProvider.GetRequiredKeyedService(e.ImplementationType, e.RegistrationKey);
+        }
+        catch
+        {
+            return default;
+        }
+    }
 }

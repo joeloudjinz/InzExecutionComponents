@@ -10,7 +10,8 @@ namespace InzExecutionComponents.ExecutionNotification;
 
 internal class ExecutionNotificationEngine
 {
-    public IServiceProvider ServiceProvider { get; set; } = null!;
+    private IServiceProvider ServiceProvider { get; set; } = null!;
+
     private readonly Dictionary<string, IExecutionNotificationContract> _notificationsMap = new();
 
     public void StartEngine(IServiceProvider services)
@@ -28,7 +29,7 @@ internal class ExecutionNotificationEngine
             var executionNotificationAttribute = notificationType.GetCustomAttribute<ExecutionNotificationAttribute>();
             if (executionNotificationAttribute == null)
             {
-                Console.Error.WriteLine($"Skipping registration of execution notification with type [{notificationType}] because of missing ExecutionNotification attribute.");
+                Console.Error.WriteLine($"Skipping registration of execution notification with type [{notificationType}] because of missing [{nameof(ExecutionNotificationAttribute)}] attribute.");
                 continue;
             }
 
@@ -61,7 +62,7 @@ internal class ExecutionNotificationEngine
         {
             if (handlerType.GetCustomAttribute<ExecutionNotificationHandlerAttribute>() is not { } attribute)
             {
-                Console.Error.WriteLine($"Skipping registration of execution notification handler with type [{handlerType}] because of missing ExecutionNotificationHandler attribute.");
+                Console.Error.WriteLine($"Skipping registration of execution notification handler with type [{handlerType}] because of missing [{nameof(ExecutionNotificationHandlerAttribute)}] attribute.");
                 continue;
             }
 
@@ -76,7 +77,7 @@ internal class ExecutionNotificationEngine
                 ImplementationType = handlerType,
                 ImplementationTypeId = handlerType.Name
             };
-            contract.RegistrationKey = $"{contract.Name}.{contract.ImplementationTypeId}";
+            contract.RegistrationKey = $"{contract.Name}@{contract.ImplementationTypeId}";
 
             if (map.TryGetValue(attribute.NotificationName, out var handlerNames))
             {
@@ -113,35 +114,11 @@ internal class ExecutionNotificationEngine
     {
         try
         {
-            var handler = ServiceProvider.GetRequiredKeyedService(contract.ImplementationType, contract.RegistrationKey);
-            return handler as IExecutionNotificationHandler;
+            return (IExecutionNotificationHandler)ServiceProvider.GetRequiredKeyedService(contract.ImplementationType, contract.RegistrationKey);
         }
         catch
         {
             return null;
         }
     }
-
-    // public async Task HandleNotifications(IExecutionContext context, string[] notifications)
-    // {
-    //     var handlers = new List<IExecutionNotificationHandler>();
-    //     foreach (var name in notifications)
-    //     {
-    //         if (!_notificationsMap.ContainsKey(name)) throw new System.Exception($"System notification [{name}] is not registered.");
-    //         if (!_notificationToHandlersMap.TryGetValue(name, out var notificationHandlerNames)) throw new System.Exception($"System notification [{name}] is not mapped to any handler.");
-    //         if (notificationHandlerNames.IsEmpty)
-    //         {
-    //             Console.WriteLine($"System notification [{name}] doesn't have any handler!");
-    //             continue;
-    //         }
-    //
-    //         foreach (var handler in _notificationToHandlersMap[name])
-    //         {
-    //             if (!_notificationHandlersMap.TryGetValue(handler, out var notificationHandlers)) throw new System.Exception($"System notification handler [{handler}] is not registered.");
-    //             handlers.Add(notificationHandlers);
-    //         }
-    //     }
-    //
-    //     await Task.WhenAll(handlers.Select(h => h.Handle(context)));
-    // }
 }

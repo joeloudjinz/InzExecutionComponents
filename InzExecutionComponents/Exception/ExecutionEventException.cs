@@ -9,7 +9,7 @@ internal class ExecutionEventException : System.Exception
     }
 
     public ExecutionEventException(string label, EventContract contract, System.Exception e) : base(
-        $"Execution event [{label}] of type [{contract.InstanceType.FullName ?? contract.InstanceType.Name}] failed",
+        $"Execution event [{label}] of type [{contract.ImplementationType.FullName ?? contract.ImplementationType.Name}] failed",
         e
     )
     {

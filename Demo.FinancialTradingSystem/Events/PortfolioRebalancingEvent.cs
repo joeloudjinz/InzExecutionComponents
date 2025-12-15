@@ -9,7 +9,7 @@ namespace Demo.FinancialTradingSystem.Events;
 [ServiceExecutionEvent(ExecutionEventKeys.PortfolioRebalancing, requiredStoreKeys: [ContextStoreKeys.TradeResults, ContextStoreKeys.CurrentPositions])]
 public class PortfolioRebalancingEvent : IExecutionEvent
 {
-    public Task PerformEventTask(IExecutionPlanContext context)
+    public Task Perform(IExecutionEventContext context)
     {
         var tradeResults = context.Store.Get<TradingOutputData>(ContextStoreKeys.TradeResults);
         var currentPositions = context.Store.Get<PortfolioPosition[]>(ContextStoreKeys.CurrentPositions);
