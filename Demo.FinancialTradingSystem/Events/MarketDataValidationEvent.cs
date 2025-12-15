@@ -9,9 +9,6 @@ namespace Demo.FinancialTradingSystem.Events;
 [ServiceExecutionEvent(
     name: ExecutionEventKeys.MarketDataValidation,
     requiredStoreKeys: [ContextStoreKeys.MarketData]
-    // requiredConfigurations: [ConfigurationLabels.ValidationRules],
-    // inputType: typeof(MarketData),
-    // outputType: typeof(ValidationResult)
 )]
 public class MarketDataValidationEvent : IExecutionEvent
 {

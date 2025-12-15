@@ -8,14 +8,12 @@ using InzExecutionComponents.Contracts.Models;
 namespace Demo.DummyApp.ExecutionPlans;
 
 [ExecutionPlan(ExecutionPlanKeys.Test)]
-[MessagingQueueLabel("messaging-queue.execution.plan.test")]
 [ExecutionInputDataType<TestOneInputData>]
 [ExecutionOutputDataType<TestOneOutputData>]
 [RegisterPreExecutionEvents(ExecutionEventKeys.TestEvent1)]
 [RegisterPreExecutionEvents(ExecutionEventKeys.TestEvent2, ExecutionEventKeys.TestEvent3)]
 [RegisterPostExecutionEvents(ExecutionEventKeys.TestEvent4)]
 [PublishExecutionNotifications([ExecutionNotificationKeys.Test])]
-// [ExecutionConfigurationOptions([ConfigurationLabels.Test])]
 public class TestExecutionPlan : IExecutionContract<IExecutionPlanResultContract>, IPreEventsExecutionContract, IPostEventsExecutionContract
 {
     public async Task BeforeDispatchingPreExecutionEvents(IExecutionPlanContext context)
