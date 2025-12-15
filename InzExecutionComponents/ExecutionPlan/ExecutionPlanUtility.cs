@@ -38,11 +38,11 @@ internal static class ExecutionPlanUtility
                 continue;
             }
 
-            if (attribute is ExecutionConfigurationOptionsAttribute executionConfigurationOptionsAttribute)
-            {
-                contract.RequiredExecutionConfigurations = executionConfigurationOptionsAttribute.Labels;
-                continue;
-            }
+            // if (attribute is ExecutionConfigurationOptionsAttribute executionConfigurationOptionsAttribute)
+            // {
+            //     contract.RequiredExecutionConfigurations = executionConfigurationOptionsAttribute.Labels;
+            //     continue;
+            // }
 
             if (attribute is PublishExecutionNotificationsAttribute publishExecutionNotificationsAttribute)
             {

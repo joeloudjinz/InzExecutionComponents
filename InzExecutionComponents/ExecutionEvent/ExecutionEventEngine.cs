@@ -2,14 +2,13 @@ using System.Reflection;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Exception;
-using InzExecutionComponents.ExecutionConfiguration;
 using InzExecutionComponents.ExecutionNotification;
 using InzExecutionComponents.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InzExecutionComponents.ExecutionEvent;
 
-internal class ExecutionEventEngine(ExecutionConfigurationEngine configurationEngine, ExecutionNotificationEngine executionNotificationEngine)
+internal class ExecutionEventEngine(ExecutionNotificationEngine executionNotificationEngine)
 {
     private IServiceProvider ServiceProvider { get; set; } = null!;
 

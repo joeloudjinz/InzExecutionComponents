@@ -15,7 +15,7 @@ public class ExecutionResult<TValue> where TValue : IExecutionPlanResultContract
 
     private ExecutionResult(ExecutionFailure error)
     {
-        IsError = false;
+        IsError = true;
         _error = error;
     }
 

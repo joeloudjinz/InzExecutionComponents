@@ -10,7 +10,6 @@ namespace Demo.FinancialTradingSystem.ExecutionPlans;
 [ExecutionPlan(ExecutionPlanKeys.FinancialTradingAlgo)]
 [ExecutionInputDataType<TradingInputData>]
 [ExecutionOutputDataType<TradingOutputData>]
-// [ExecutionConfigurationOptions([ConfigurationLabels.TradingRiskLimits])]
 [RegisterPreExecutionEvents(ExecutionEventKeys.MarketDataValidation)]
 [RegisterPreExecutionEvents(ExecutionEventKeys.LiquidityAssessment, ExecutionEventKeys.RegulatoryCompliance, ExecutionEventKeys.PositionOverlapCheck)]
 [RegisterPostExecutionEvents(ExecutionEventKeys.TradeLogging, ExecutionEventKeys.PerformanceMetricsUpdate)]

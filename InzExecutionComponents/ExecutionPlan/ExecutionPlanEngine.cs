@@ -2,7 +2,6 @@ using System.Reflection;
 using InzExecutionComponents.Contracts.ExecutionContext;
 using InzExecutionComponents.Contracts.ExecutionEvent;
 using InzExecutionComponents.Contracts.ExecutionPlan;
-using InzExecutionComponents.ExecutionConfiguration;
 using InzExecutionComponents.ExecutionContext;
 using InzExecutionComponents.ExecutionEvent;
 using InzExecutionComponents.ExecutionNotification;
@@ -13,8 +12,7 @@ namespace InzExecutionComponents.ExecutionPlan;
 
 internal class ExecutionPlanEngine(
     ExecutionEventEngine executionEventEngine,
-    ExecutionNotificationEngine executionNotificationEngine,
-    ExecutionConfigurationEngine executionConfigurationEngine
+    ExecutionNotificationEngine executionNotificationEngine
 )
 {
     private readonly List<IExecutionPlanContract> _registeredExecutionPlanContracts = [];
@@ -68,7 +66,7 @@ internal class ExecutionPlanEngine(
             LoadInputValuesIntoExecutionContextStore(context, plan, parameters);
         }
 
-        CheckAndLoadRequiredConfigurationOptions(context, plan);
+        // CheckAndLoadRequiredConfigurationOptions(context, plan);
 
         await CheckAndRunBeforeDispatchingPreExecutionEventsTask(context, plan);
         if (CheckAndProcessFailures(context)) return;
@@ -172,11 +170,11 @@ internal class ExecutionPlanEngine(
         await instance.BeforeDispatchingPreExecutionEvents(context);
     }
 
-    private void CheckAndLoadRequiredConfigurationOptions(IInternalExecutionContext context, IExecutionPlanContract plan)
-    {
-        if (plan.RequiredExecutionConfigurations.Length == 0) return;
-        executionConfigurationEngine.LoadConfigurationOptionsIntoContext(context, plan.RequiredExecutionConfigurations);
-    }
+    // private void CheckAndLoadRequiredConfigurationOptions(IInternalExecutionContext context, IExecutionPlanContract plan)
+    // {
+    //     if (plan.RequiredExecutionConfigurations.Length == 0) return;
+    //     executionConfigurationEngine.LoadConfigurationOptionsIntoContext(context, plan.RequiredExecutionConfigurations);
+    // }
 
     private static bool CheckAndProcessFailures(IInternalExecutionContext context)
     {
