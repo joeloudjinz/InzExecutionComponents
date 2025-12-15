@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InzExecutionComponents", "InzExecutionComponents\InzExecutionComponents.csproj", "{4CB84026-8B59-40F0-9896-9D91CFC580BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.DummyApp", "Demo.DummyApp\Demo.DummyApp.csproj", "{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.FinancialTradingSystem", "Demo.FinancialTradingSystem\Demo.FinancialTradingSystem.csproj", "{037BC365-F79F-4931-B8DA-8938873FE973}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4CB84026-8B59-40F0-9896-9D91CFC580BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CB84026-8B59-40F0-9896-9D91CFC580BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CB84026-8B59-40F0-9896-9D91CFC580BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CB84026-8B59-40F0-9896-9D91CFC580BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E52A5C4A-21D3-4B93-9BEB-B48CDF8A5D27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{037BC365-F79F-4931-B8DA-8938873FE973}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{037BC365-F79F-4931-B8DA-8938873FE973}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{037BC365-F79F-4931-B8DA-8938873FE973}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{037BC365-F79F-4931-B8DA-8938873FE973}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
